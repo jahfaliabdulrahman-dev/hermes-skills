@@ -20,6 +20,7 @@ These aren't tutorials. They're operational knowledge extracted from real projec
 | [`flutter-isar-clean-arch-setup`](skills/flutter-isar-clean-arch-setup/SKILL.md) | Production Flutter + Isar + Riverpod Clean Architecture from zero — models, repositories, providers, silent migrations, bilingual dynamic collections | 22 KB |
 | [`flutter-lessons-patterns`](skills/flutter-lessons-patterns/SKILL.md) | Cross-project Flutter patterns from CarSah + Hermex Android + Azdal — 48 documented patterns (up from 45), now including Azdal Stage-4 cross-project lessons (LL-009/010/011) | 120 KB |
 | [`flutter-patterns`](skills/flutter-patterns/SKILL.md) | Class-level Flutter patterns — ANR debugging (Signal 3/SIGQUIT), dialog transient file lifecycle, Flutter text field clipping, widget wrapping anti-patterns | 22 KB |
+| [`flutter-soul-stewardship`](skills/flutter-soul-stewardship/SKILL.md) | Exact procedure for writing and maintaining SOUL.md agent identity files — the REAL driver of multi-agent swarm performance. Deterministic, cross-profile, machine-verifiable | 4 KB |
 
 ### Repository & DevOps
 
@@ -27,13 +28,6 @@ These aren't tutorials. They're operational knowledge extracted from real projec
 |-------|-------------|------|
 | [`repo-front-door`](skills/repo-front-door/SKILL.md) | Polish any GitHub repo for outsiders — green CI, automated build artifacts, README structure with download-first layout, brand assets (avatar, social card with RTL support) | 9 KB |
 | [`supabase-fullstack`](skills/supabase-fullstack/SKILL.md) | Complete Supabase workflow — frontend (supabase-js, SSR, auth/sessions), backend (Python, CLI, PostgreSQL), and DevOps (migrations, RLS, MCP). Merged from official @supabase/skills + production patterns from Azdal/Hermex | 12 KB |
-
-### AI Governance & Swarm Intelligence
-
-| Skill | Description | Size |
-|-------|-------------|------|
-| [`swarm-governance`](skills/swarm-governance/SKILL.md) | Flutter swarm governance constitution — 8-article constitutional framework with Constitutional Court (§VI), Governance Council (§V), EPIC completion gates (§19), and zero-trust enforcement protocol | 23 KB |
-| [`scsi-self-correcting-swarm`](skills/scsi-self-correcting-swarm/SKILL.md) | Self-Correcting Swarm Intelligence architecture for Hermes Agent multi-agent systems — autonomous error detection, correction loops, and systemic self-healing | 8 KB |
 
 ### Research & Auditing
 
