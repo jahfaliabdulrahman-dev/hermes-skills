@@ -1,7 +1,7 @@
 ---
 name: skill-ecosystem-sync
 description: Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to all 10 Flutter swarm profiles. This is the ONE skill to load before any "update skills" task. Captured from the 2026-07-18 marathon session.
-version: 1.0.0
+version: 1.1.0
 author: Sulaiman
 tags: [skills, update, devops, npx, clawhub, hermes, profiles, sync, maintenance]
 ---
@@ -18,29 +18,53 @@ Complete systematic workflow for updating ALL skills across the ecosystem. This 
 
 ---
 
-## Phase 1: Update Published Repo Skills
+## Phase 1: Bidirectional Sync — Our Published Skills
 
 Our skills live at `jahfaliabdulrahman-dev/hermes-skills` on GitHub.
 
-```bash
-# 1. Pull latest from the local repo clone
-cd /tmp/hermes-skills && git pull
+### Pull: GitHub → Local (download any remote changes)
 
-# 2. Sync ALL 10 published skills from repo → local store
+```bash
+cd /tmp/hermes-skills && git pull
+```
+
+### Push: Local → GitHub (upload our improvements)
+
+**CRITICAL — If any of our 11 skills were modified locally, the repo must reflect it.**
+
+```bash
+cd /tmp/hermes-skills
+
+# 1. Sync all 11 published skills FROM local → repo
 for skill in flutter-android-build-system flutter-design-anti-patterns \
   flutter-isar-clean-arch-setup flutter-lessons-patterns flutter-patterns \
   flutter-soul-stewardship github-project-audit repo-front-door \
-  specification-writing supabase-fullstack; do
-  rsync -a --delete /tmp/hermes-skills/skills/$skill/ ~/.hermes/skills/$skill/
+  specification-writing supabase-fullstack skill-ecosystem-sync; do
+  
+  # Find actual path (skills may be in subdirectories)
+  src=$(find ~/.hermes/skills -maxdepth 3 -type d -name "$skill" -exec test -f {}/SKILL.md \; -print | head -1)
+  if [ -n "$src" ] && [ -f "$src/SKILL.md" ]; then
+    rsync -a "$src/" /tmp/hermes-skills/skills/$skill/
+  fi
 done
+
+# 2. Check if any changes exist
+git status
+
+# 3. If changes → commit + push
+if ! git diff --quiet || ! git diff --cached --quiet; then
+  git add -A
+  git commit -m "🔄 Sync: local improvements to published skills"
+  git push
+fi
 ```
 
-**PITFALL:** Some skills are in subdirectories (`flutter/`, `android/`, `devops/`, `research/`, `software-development/`). The rsync may place them at a different path than expected. Always verify:
+**PITFALL:** This is BIDIRECTIONAL. Always pull FIRST to avoid conflicts. Then push our improvements.
+
+### Verify
 
 ```bash
-for skill in ...; do
-  find ~/.hermes/skills -maxdepth 3 -type d -name "$skill" | head -1
-done
+cd /tmp/hermes-skills && git log --oneline -3
 ```
 
 ---
@@ -121,7 +145,8 @@ After updating default profile, sync ALL 10 Flutter swarm profiles:
 KEY_SKILLS="flutter-android-build-system flutter-design-anti-patterns \
   flutter-isar-clean-arch-setup flutter-lessons-patterns flutter-patterns \
   flutter-soul-stewardship github-project-audit repo-front-door \
-  specification-writing supabase-fullstack find-docs find-skills officecli"
+  specification-writing supabase-fullstack skill-ecosystem-sync \
+  find-docs find-skills officecli"
 
 for profile_dir in ~/.hermes/profiles/flutter-*/; do
   for skill in $KEY_SKILLS; do
@@ -160,7 +185,7 @@ The repo is auto-discovered when public and properly formatted:
 - `skills/` directory with `SKILL.md` files
 - `clawhub-skills` or `agent-skills` GitHub topics
 
-Verify: `npx skills add jahfaliabdulrahman-dev/hermes-skills -l` should show all 10 skills.
+Verify: `npx skills add jahfaliabdulrahman-dev/hermes-skills -l` should show all 11 skills.
 
 ### To ClawHub
 
@@ -173,7 +198,7 @@ Before submitting, run security scan:
 hermes skills publish <path> --to clawhub
 ```
 
-7/10 skills pass with SAFE verdict. 3/10 get CAUTION:
+7/11 skills pass with SAFE verdict. 3/11 get CAUTION:
 - `flutter-android-build-system` (5 findings) — likely shell scripts flagged
 - `repo-front-door` (5 findings) — likely Python scripts flagged
 - `flutter-patterns` (1 finding) — minor
@@ -184,7 +209,7 @@ hermes skills publish <path> --to clawhub
 
 | Registry | Count | Update Command |
 |----------|-------|---------------|
-| Our published (GitHub) | 10 | `git pull && rsync` |
+| Our published (GitHub) | 11 | `git pull && rsync` (bidirectional) |
 | npx external (agents/) | ~50 | `npx skills update -g -y` |
 | ClawHub/Hermes hub | ~8 | `hermes skills check && hermes skills update` |
 | Hermes built-in/bundled | ~40 | `hermes update` |
@@ -207,11 +232,12 @@ hermes skills publish <path> --to clawhub
 ## Session Reference
 
 This skill was created from the 2026-07-18 marathon session where we:
-1. Published 10 skills to skills.sh
-2. Updated specification-writing from 18 → 22 slots
+1. Published 11 skills to skills.sh
+2. Updated specification-writing from 18 → 22 slots (v2.0)
 3. Installed 12 Dart skills from flutter/skills
 4. Installed 11 marketing skills from coreyhaines31
 5. Fixed google-workspace regression (restored stock)
 6. Audited all 8 user-modified bundled skills
 7. Synced skills to all 10 swarm profiles + default
 8. Attempted ClawHub publishing (CLI not supported)
+9. Added bidirectional GitHub sync (local → repo → push) in v1.1.0
