@@ -1,11 +1,9 @@
 # Hermes Skills — Production-Grade Agent Skills for Flutter, DevOps & AI Governance
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Skills](https://img.shields.io/badge/skills.sh-10%20skills-6366f1)](https://skills.sh)
+[![Skills](https://img.shields.io/badge/skills.sh-11%20skills-6366f1)](https://skills.sh)
 
-**A curated collection of battle-tested agent skills forged in production Flutter projects (CarSah, Hermex Android, Azdal) and multi-agent swarm governance research.**
-
-These aren't tutorials. They're operational knowledge extracted from real projects — every pattern, pitfall, and protocol earned through production debugging, academic rigor, and 59+ documented lessons learned.
+**A curated collection of battle-tested agent skills forged in production Flutter projects (CarSah, Hermex Android, Azdal). Every pattern, pitfall, and protocol earned through real debugging sessions — 48 documented patterns and counting.**
 
 ---
 
@@ -15,7 +13,7 @@ These aren't tutorials. They're operational knowledge extracted from real projec
 
 | Skill | Description | Size |
 |-------|-------------|------|
-| [`specification-writing`](skills/specification-writing/SKILL.md) | The AI-Agent App Build Specification Pack framework — 18-file structure governing every project from product discovery to financial models. Enforces the NO PROCEDURAL REDUCTION rule: never condense, never skip, never lose engineering depth. This is the blueprint every project starts from | 5 KB |
+| [`specification-writing`](skills/specification-writing/SKILL.md) | The AI-Agent App Build Specification Pack framework — 22-slot structure (27+ files) governing every project from product discovery to financial models and personal build plans. Enforces the NO PROCEDURAL REDUCTION rule. This is the blueprint every project starts from | 10 KB |
 | [`flutter-soul-stewardship`](skills/flutter-soul-stewardship/SKILL.md) | Exact procedure for writing and maintaining SOUL.md agent identity files — the REAL driver of multi-agent swarm performance. Deterministic, cross-profile, machine-verifiable | 4 KB |
 
 ### Flutter & Mobile
@@ -33,6 +31,7 @@ These aren't tutorials. They're operational knowledge extracted from real projec
 | Skill | Description | Size |
 |-------|-------------|------|
 | [`repo-front-door`](skills/repo-front-door/SKILL.md) | Polish any GitHub repo for outsiders — green CI, automated build artifacts, README structure with download-first layout, brand assets (avatar, social card with RTL support) | 9 KB |
+| [`skill-ecosystem-sync`](skills/skill-ecosystem-sync/SKILL.md) | Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub, ClawHub, profile swarm). 5-phase systematic procedure. The meta-skill that keeps all other skills current | 6 KB |
 | [`supabase-fullstack`](skills/supabase-fullstack/SKILL.md) | Complete Supabase workflow — frontend (supabase-js, SSR, auth/sessions), backend (Python, CLI, PostgreSQL), and DevOps (migrations, RLS, MCP). Merged from official @supabase/skills + production patterns from Azdal/Hermex | 12 KB |
 
 ### Research & Auditing
@@ -54,16 +53,17 @@ npx skills add jahfaliabdulrahman-dev/hermes-skills
 ### Install individual skills
 
 ```bash
-npx skills add jahfaliabdulrahman-dev/hermes-skills@repo-front-door
-npx skills add jahfaliabdulrahman-dev/hermes-skills@flutter-isar-clean-arch-setup
-npx skills add jahfaliabdulrahman-dev/hermes-skills@flutter-android-build-system
-npx skills add jahfaliabdulrahman-dev/hermes-skills@flutter-design-anti-patterns
-npx skills add jahfaliabdulrahman-dev/hermes-skills@flutter-lessons-patterns
-npx skills add jahfaliabdulrahman-dev/hermes-skills@flutter-patterns
-npx skills add jahfaliabdulrahman-dev/hermes-skills@swarm-governance
-npx skills add jahfaliabdulrahman-dev/hermes-skills@scsi-self-correcting-swarm
-npx skills add jahfaliabdulrahman-dev/hermes-skills@github-project-audit
-npx skills add jahfaliabdulrahman-dev/hermes-skills@supabase-integration
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill specification-writing
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-soul-stewardship
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-isar-clean-arch-setup
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-android-build-system
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-design-anti-patterns
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-lessons-patterns
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-patterns
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill repo-front-door
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill supabase-fullstack
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill github-project-audit
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill skill-ecosystem-sync
 ```
 
 ---
@@ -72,10 +72,10 @@ npx skills add jahfaliabdulrahman-dev/hermes-skills@supabase-integration
 
 Every skill in this repository was born from a production failure that became a permanent lesson:
 
-- **GL-016 (Identity Conflation):** An AI agent's confession was stored as a human statement because memory had no role-based segregation. → `scsi-self-correcting-swarm` now enforces Role-Based Memory tables (human/agent/system).
+- **LL-010 (Live-Device Verification):** 5 critical bugs found on real device AFTER `flutter analyze` clean + 34/34 tests passing + 2 AI auditors signing APPROVE. → `flutter-lessons-patterns` now enforces live-device verification as the final gate before any DONE declaration.
 - **LL-024 (ClassNotFoundException):** `namespace` in `build.gradle.kts` didn't match `MainActivity.kt` package. → `flutter-android-build-system` now gates every build with 5 preflight checks.
-- **LL-025 (Instant Crash):** `isMinifyEnabled=true` + Isar → R8 stripped adapters. → Same skill now auto-detects `isar:` in pubspec and blocks the misconfiguration.
-- **Governance Deadlock (EPIC-001):** Lead Architect abandoned after 27 minutes because text-only SOUL.md provided no enforcement. → `swarm-governance` now enforces 6 constitutional gates before any EPIC closure.
+- **LL-011 (Disabled Button Colors):** Material silently substitutes its default palette when `onPressed: null` — custom colors lost without error. → Same skill now enforces explicit `disabledBackgroundColor`/`disabledForegroundColor`.
+- **SOUL Quality Conundrum:** EPIC-001 failed in 27 minutes because 2-3 line SOUL.md files gave agents no identity. After rewriting SOULs to 150-581 lines, EPIC-002 succeeded. → `flutter-soul-stewardship` is the real governance — not constitutional courts, but strong agent identity.
 
 **We don't ship "best practices." We ship scar tissue.**
 
