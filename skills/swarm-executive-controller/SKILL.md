@@ -1,7 +1,7 @@
 ---
 name: swarm-executive-controller
 description: Control a 10-agent Flutter swarm via MCP Bridge — delegate tasks, monitor status, review reports, and issue corrections. Uses Router A (Triple Chinese MoA) for long tasks. For Claude Code or Kimi CLI as Executive Controller over Hermes Lead Architect.
-version: 0.1.0
+version: 0.2.0
 author: Hermes
 metadata:
   hermes:
@@ -39,9 +39,9 @@ You control this team through the Lead Architect. Each agent has a specific role
 
 **Key Rule:** NEVER assign a task to the wrong specialist. The State Engineer handles business logic. The Backend Architect handles Supabase. The QA Tester verifies. Delegating to the wrong profile wastes tokens and produces substandard output.
 
-## Your 4 MCP Tools
+## Your 5 MCP Tools
 
-When connected via the MCP Bridge to the Hermes Lead Architect, you have exactly 4 tools:
+When connected via the MCP Bridge to the Hermes Lead Architect, you have exactly 5 tools (4 delegation + 1 Kanban):
 
 ### 1. `lead_delegate` — Start a Task
 
@@ -139,6 +139,55 @@ lead_correct(
 - Be specific about what's wrong and what's expected
 - If the swarm made the same mistake twice, check your task description — it may be ambiguous
 - One correction per issue — don't bundle 5 fixes in one `lead_correct`
+
+### 5. Kanban Board (Read-Only)
+
+These tools give you visibility into the swarm's workload WITHOUT interfering with the Lead Architect's distribution authority. You can SEE everything but you cannot MOVE, DELETE, or REPRIORITIZE tasks that aren't yours.
+
+```
+lead_kanban_view() → {
+  columns: [
+    { name: "Backlog", tasks: [{ id, title, assigned_to, priority, age }] },
+    { name: "In Progress", tasks: [...] },
+    { name: "Review", tasks: [...] },
+    { name: "Done", tasks: [...] }
+  ],
+  bottlenecks: [{ profile: "flutter-qa-tester", queued: 5, warning: true }],
+  swarm_health: "healthy" | "overloaded" | "idle"
+}
+
+lead_kanban_status(task_id?: string) → {
+  task: { id, title, status, assigned_to, started_at, dependencies, blocks },
+  chain: [{ task_id, status }]  // if part of a dependency chain
+}
+```
+
+**When to use Kanban tools:**
+
+| Situation | Tool | Action |
+|-----------|------|--------|
+| Before delegating | `lead_kanban_view` | Check if task already exists or related task is running |
+| Swarm seems slow | `lead_kanban_view` | Check bottlenecks — is QA overwhelmed? |
+| Delegation weird result | `lead_kanban_status` | Trace dependency chain — what blocked it? |
+| Before canceling | `lead_kanban_status` | Check if task has dependent tasks that would break |
+
+**Why Read-Only:**
+
+| Operation | Allowed? | Reason |
+|-----------|----------|--------|
+| View board | ✅ | Situational awareness |
+| View task status | ✅ | Trace dependencies |
+| Cancel your own task | ✅ | Via `lead_correct(mode="new_task")` — not direct Kanban cancel |
+| Reassign a task | ❌ | Lead Architect owns distribution |
+| Reprioritize | ❌ | Lead decides what's urgent |
+| Delete a task | ❌ | Audit trail — irreversible |
+| Decompose a task | ❌ | Lead's core job — do not undermine SOUL |
+
+**Bottleneck response protocol:**
+1. If `swarm_health: "overloaded"` — do NOT delegate new tasks. Wait or check bottlenecks.
+2. If a profile has 3+ queued tasks — consider delegating the NEW task to a different profile.
+3. If all profiles are busy — batch your corrections instead of sending them one by one.
+4. NEVER "clear the queue" — Kanban tasks exist for a reason. Only cancel your own.
 
 ## Router A — The Economic Model for Long Tasks
 
