@@ -1,0 +1,147 @@
+<!--
+  Social preview card template — 1280x640.
+
+  Render it with (path is relative to the SKILL directory, not your repo):
+      python3 <skill-dir>/scripts/render_card.py this-file.html -o card.png \
+              --ignore-bottom 10
+
+  Why 10: the .accent-bar below is 8px and deliberately bleeds to the edge. Give
+  --ignore-bottom the bar's height PLUS ~2px — the line where it meets the
+  background is itself a full-width edge and otherwise reads as content touching
+  the crop zone. Change the bar height, change this number.
+
+  Written for a browser rather than an image library on purpose: browsers shape
+  complex scripts (Arabic/Persian/Urdu/Hindi/Thai) and handle RTL correctly,
+  which Pillow cannot do without raqm.
+
+  Replace the ⟨PLACEHOLDERS⟩. For a left-to-right language, drop dir="rtl" and
+  change .copy's text-align to left.
+-->
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8" />
+<style>
+  /* Bundle the brand font by absolute path so the render is reproducible and
+     never silently falls back to a system face. */
+  @font-face {
+    font-family: 'Brand';
+    src: url('file://⟨ABSOLUTE_PATH⟩/YourFont-Regular.ttf');
+    font-weight: 400;
+  }
+  @font-face {
+    font-family: 'Brand';
+    src: url('file://⟨ABSOLUTE_PATH⟩/YourFont-Bold.ttf');
+    font-weight: 700;
+  }
+  @font-face {
+    font-family: 'Brand';
+    src: url('file://⟨ABSOLUTE_PATH⟩/YourFont-Black.ttf');
+    font-weight: 900;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  /* overflow:hidden on BOTH html and body matters: an absolutely-positioned
+     child placed outside the viewport (a decorative watermark at left:-120px,
+     say) otherwise extends the scrollable canvas, and the render shows a strip
+     of untouched white page beside your card. Clipping at both levels stops it.
+     The background is set on html as well so nothing can expose bare canvas
+     even if something does escape. */
+  html {
+    background: ⟨BRAND_DARK⟩;
+  }
+
+  html, body {
+    width: 1280px;
+    height: 640px;
+    overflow: hidden;
+  }
+
+  body {
+    font-family: 'Brand', sans-serif;
+    background:
+      radial-gradient(980px 560px at 8% 112%, rgba(⟨ACCENT_RGB⟩, 0.22) 0%, rgba(⟨ACCENT_RGB⟩, 0) 60%),
+      linear-gradient(130deg, ⟨BRAND_DARK⟩ 0%, ⟨BRAND_MID⟩ 52%, ⟨BRAND_DARK⟩ 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+
+  /* Deliberate full-bleed accent. Tell render_card.py to ignore its height
+     plus ~2px, or its boundary line reads as content touching the edge. */
+  .accent-bar {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 8px;
+    background: linear-gradient(90deg, ⟨BRAND_DARK⟩ 0%, ⟨ACCENT⟩ 50%, ⟨BRAND_ALT⟩ 100%);
+  }
+
+  /* NB: this padding does NOT guarantee the crop margin. .safe is a
+     shrink-to-fit flex item centered in body, so its padding travels with the
+     content instead of reserving space at the viewport edge — what actually
+     keeps the margin is the content staying narrow enough. Grow the text and
+     the margins collapse regardless of this value. The padding is a floor for
+     the gap, not a guarantee; render_card.py measures the real thing. */
+  .safe {
+    padding: 70px;
+    display: flex;
+    align-items: center;
+    gap: 60px;
+  }
+
+  /* A white rounded tile reads as an app icon — and conveniently means a
+     white-background logo needs no transparency work. */
+  .mark {
+    width: 248px;
+    height: 248px;
+    border-radius: 54px;
+    background: #fff;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .mark img { width: 206px; height: 206px; object-fit: contain; }
+
+  .copy { text-align: right; }
+
+  .name { font-weight: 900; font-size: 112px; line-height: 1.02; color: #fff; }
+
+  .latin {
+    font-weight: 600; font-size: 25px;
+    color: ⟨ACCENT⟩; letter-spacing: 8px; margin-top: 6px;
+  }
+
+  /* nowrap keeps the line from reflowing into the crop zone at render size. */
+  .tagline {
+    font-weight: 700; font-size: 46px;
+    color: #EAF0FA; margin-top: 26px; white-space: nowrap;
+  }
+  .tagline .payoff { color: ⟨ACCENT⟩; font-weight: 900; }
+
+  .sub {
+    font-weight: 400; font-size: 26px;
+    color: rgba(255, 255, 255, 0.72); margin-top: 18px; white-space: nowrap;
+  }
+</style>
+</head>
+<body>
+  <div class="safe">
+    <div class="mark">
+      <img src="file://⟨ABSOLUTE_PATH⟩/logo.png" alt="⟨NAME⟩" />
+    </div>
+
+    <div class="copy">
+      <div class="name">⟨NAME⟩</div>
+      <div class="latin">⟨NAME_LATIN⟩</div>
+      <div class="tagline">⟨TAGLINE⟩ <span class="payoff">⟨TAGLINE_PAYOFF⟩</span></div>
+      <div class="sub">⟨ONE_LINE_PITCH⟩</div>
+    </div>
+  </div>
+
+  <div class="accent-bar"></div>
+</body>
+</html>
