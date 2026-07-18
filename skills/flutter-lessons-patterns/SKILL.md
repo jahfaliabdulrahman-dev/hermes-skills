@@ -1927,7 +1927,158 @@ done
 
 ---
 
-- **Last Updated:** 2026-07-16 — v2.14.0 — New Patterns 41–45 (RC6/HERMEX-008): Error-handling architecture (validateStatus+interceptor+sanitizeError), Certificate pinning uniform wiring (single ApiClient provider), Reactive profile switching (watch connectionProvider), Gate rescan integrity (re-test specific rejected findings), Bundled-task pattern (shared-file conflict avoidance). Patterns count: 45.
+- **Last Updated:** 2026-07-18 — v2.15.0 — New Patterns 46–48 (Azdal Stage 4 cross-project): Never-Say-No-Data (cold-start UX), Live-Device Verification Supremacy (tests pass ≠ works), Regex-Gate Fallback + Disabled-Button Colors (LL-010, LL-011). Patterns count: 48.
+
+---
+
+## Pattern 46 — Never Say "No Data": Cold Start Intelligence (LL-009)
+
+**Source:** Azdal (2026-05-16) → `~/Projects/Azdal/app-spec/00_lessons_learned.md`
+
+**Rule:** Apps that say "add more transactions to see insights" lose users. The first experience MUST deliver value using whatever context is available — income brackets, general estimates, confidence levels. Give value first, then ask minimal questions (3 max).
+
+```dart
+// ❌ BROKEN — user sees "no data" on first open
+if (transactions.isEmpty) {
+  return Text("Add transactions to see your financial health");
+}
+
+// ✅ CORRECT — use estimates with confidence levels
+final estimate = IncomeBracketEstimate.forRegion('SA');
+return FinancialHealthCard(
+  score: estimate.medianScore,
+  confidence: ConfidenceLevel.low, // honest about uncertainty
+  prompt: "Connect your bank for a personalized score →",
+);
+```
+
+**Why:** Onboarding delivers insight before asking for input. 77% of finance app users quit in 3 days due to empty-state friction. Every additional tap required before the user sees value reduces retention.
+
+---
+
+<details>
+<summary>📋 Full Original: LL-009</summary>
+
+**LL-009: Never Say "No Data"**
+- **Date:** 2026-05-16
+- **Stage:** Triple-agent brainstorming
+- **Lesson:** Apps that say "add more transactions to see insights" lose users. The first experience must deliver value.
+- **Impact:** Designed Cold Start Intelligence: use income brackets, general estimates, confidence levels. Give value first, then ask minimal questions (3 max).
+- **Rule:** Onboarding delivers insight before asking for input.
+- **Source:** Azdal `01_prd.md`
+
+</details>
+
+---
+
+## Pattern 47 — Live-Device Verification Supremacy (LL-010)
+
+**Source:** Azdal (2026-07-14) → `~/Projects/Azdal/app-spec/00_lessons_learned.md`
+
+**Rule:** "Tests pass" and "agent/auditor approved it" are necessary but NEVER sufficient. Before accepting any "done" report, reproduce the flow on a real device and query the live database directly — do NOT trust the app's own "success" message.
+
+```bash
+# ✅ Verification pipeline for any database-write feature:
+# 1. Reproduce the exact user flow on a real device
+# 2. Query the live database independently (do NOT trust app's success message)
+# 3. Confirm: row exists + right values + right timestamp
+PGPASSWORD='<pwd>' psql "postgresql://postgres:***@db.<ref>.supabase.co:5432/postgres" \
+  -c "SELECT * FROM purchases WHERE user_id = '<uuid>' ORDER BY created_at DESC LIMIT 5;"
+```
+
+**Why (from Azdal Stage 4):** 5 critical bugs found AFTER `flutter analyze` clean, `flutter test` 34/34 passing, Zero-Trust Auditor APPROVE with 0 CRITICAL, and SCSI Guardian ALL CLEAR:
+1. Purchase-confirmation insert against columns that don't exist on live table (100% failure rate)
+2. Submit button never disabled (unlimited duplicate writes)
+3. Success messages showing same sentence twice
+4. Arabic-Indic numerals silently failing every form-field parse
+5. A regression introduced BY the fix for #2 — key rename (`_form_kind` → `form_kind`) silently dropped
+
+None were reachable by static analysis or unit tests. Every one found by: real device + direct database query.
+
+---
+
+<details>
+<summary>📋 Full Original: LL-010</summary>
+
+**LL-010: Passing Tests and Agent Self-Approval Are Not Verification**
+- **Date:** 2026-07-14
+- **Stage:** Stage 4 (BUY+INTG) live device testing
+- **Lesson:** 5 critical bugs found on live device AFTER all gates passed. Unit tests re-derived target formulas as local constants instead of instantiating the actual service — they would pass unchanged against a broken implementation.
+- **Rule:** Reproduce the flow live and check the live data source directly. Route B's own audit/guardian layer missed all 5 bugs.
+- **Source:** Azdal `12_decision_log.md` DEC-036
+
+</details>
+
+---
+
+## Pattern 48 — Regex Pre-Filter Gates + Disabled Button Colors (LL-011)
+
+**Source:** Azdal (2026-07-15) → `~/Projects/Azdal/app-spec/00_lessons_learned.md`
+
+**Rule A — Regex pre-filter fallback:** Any local keyword/regex gate standing in front of an LLM classifier for a correctness-critical feature MUST have a fallback path. A miss degrades to confidently-wrong-and-silent, not "slower but correct."
+
+```dart
+// ❌ regex-only gate — miss = silently falls through to generic chat
+if (_looksLikeBuyIntent(message)) {
+  return await purchaseService.evaluate(message);
+}
+// Falls through — user gets generic coach reply, purchase is silently ignored
+
+// ✅ regex gate with safety-net classifier fallback
+if (_looksLikeBuyIntent(message)) {
+  return await purchaseService.evaluate(message);
+}
+// Fallback: if message is substantial (>20 chars, contains Arabic), 
+// call classifier anyway as safety net
+if (message.length > 20 && containsArabic(message)) {
+  final intent = await classifier.classify(message);
+  if (intent == Intent.buy) {
+    return await purchaseService.evaluate(message);
+  }
+}
+```
+
+**Rule B — Disabled button colors:** `ElevatedButton.styleFrom(backgroundColor:, foregroundColor:)` only styles the ENABLED state. Once `onPressed: null`, Material silently substitutes its default disabled palette. Always set `disabledBackgroundColor`/`disabledForegroundColor` explicitly.
+
+```dart
+// ❌ custom colors silently lost when button is disabled
+ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Color(0xFF001F5E),
+    foregroundColor: Colors.white,
+  ),
+  onPressed: isAnswered ? null : () => submit(),  // ← colors LOST when null
+  child: Text("Submit"),
+)
+
+// ✅ explicit disabled colors
+ElevatedButton(
+  style: ElevatedButton.styleFrom(
+    backgroundColor: Color(0xFF001F5E),
+    foregroundColor: Colors.white,
+    disabledBackgroundColor: Color(0xFF001F5E).withOpacity(0.5),
+    disabledForegroundColor: Colors.white70,
+  ),
+  onPressed: isAnswered ? null : () => submit(),
+  child: Text("Submit"),
+)
+```
+
+**Verification:** When debugging button colors, measure actual RGB pixel values from a live screenshot — opacity-wrapper fixes treat the wrong layer and look plausible without fixing anything.
+
+---
+
+<details>
+<summary>📋 Full Original: LL-011</summary>
+
+**LL-011: A Local Regex Gate May Decide Cost, Never Correctness — And a "Disabled" Style Isn't Automatically Your Style**
+- **Date:** 2026-07-15
+- **Stage:** Second live-device retest of Stage 4, escalated to Opus 4.8
+- **Lesson:** Two traps: (1) Regex pre-filters required exact hamza spelling, dropping common dialect typing silently. (2) ElevatedButton colors silently lost when disabled — only pixel-sampling a live screenshot revealed the real mechanism.
+- **Rule:** Regex gates need fallback paths. Disabled button styles must be explicit.
+- **Source:** Azdal DEC-037, DEC-037-B
+
+</details>
 
 ## Related Skills
 

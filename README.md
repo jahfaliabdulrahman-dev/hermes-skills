@@ -18,7 +18,7 @@ These aren't tutorials. They're operational knowledge extracted from real projec
 | [`flutter-android-build-system`](skills/flutter-android-build-system/SKILL.md) | Complete Android build system knowledge — Gradle KTS, AGP 8.8+, namespace/packaging rules, R8/minify, hermex_android crash root-cause patterns (LL-024, LL-025) | 20 KB |
 | [`flutter-design-anti-patterns`](skills/flutter-design-anti-patterns/SKILL.md) | 31 design anti-patterns detected at build-time via custom_lint rules — from Hero tag collisions to InputMethodManager ANR triggers | 17 KB |
 | [`flutter-isar-clean-arch-setup`](skills/flutter-isar-clean-arch-setup/SKILL.md) | Production Flutter + Isar + Riverpod Clean Architecture from zero — models, repositories, providers, silent migrations, bilingual dynamic collections | 22 KB |
-| [`flutter-lessons-patterns`](skills/flutter-lessons-patterns/SKILL.md) | Cross-project Flutter patterns distilled from CarSah + Hermex Android — 59 documented lessons (17 GL + 42 LL) covering ANR debugging, dialog localization, input hardening, Isar file lifecycle | 114 KB |
+| [`flutter-lessons-patterns`](skills/flutter-lessons-patterns/SKILL.md) | Cross-project Flutter patterns from CarSah + Hermex Android + Azdal — 48 documented patterns (up from 45), now including Azdal Stage-4 cross-project lessons (LL-009/010/011) | 120 KB |
 | [`flutter-patterns`](skills/flutter-patterns/SKILL.md) | Class-level Flutter patterns — ANR debugging (Signal 3/SIGQUIT), dialog transient file lifecycle, Flutter text field clipping, widget wrapping anti-patterns | 22 KB |
 
 ### Repository & DevOps
@@ -26,7 +26,7 @@ These aren't tutorials. They're operational knowledge extracted from real projec
 | Skill | Description | Size |
 |-------|-------------|------|
 | [`repo-front-door`](skills/repo-front-door/SKILL.md) | Polish any GitHub repo for outsiders — green CI, automated build artifacts, README structure with download-first layout, brand assets (avatar, social card with RTL support) | 9 KB |
-| [`supabase-integration`](skills/supabase-integration/SKILL.md) | Complete Supabase workflow — Python client, CLI, PostgreSQL, Row Level Security, migrations, edge functions | 12 KB |
+| [`supabase-fullstack`](skills/supabase-fullstack/SKILL.md) | Complete Supabase workflow — frontend (supabase-js, SSR, auth/sessions), backend (Python, CLI, PostgreSQL), and DevOps (migrations, RLS, MCP). Merged from official @supabase/skills + production patterns from Azdal/Hermex | 12 KB |
 
 ### AI Governance & Swarm Intelligence
 
