@@ -1,7 +1,7 @@
 ---
 name: swarm-executive-controller
 description: Control a 10-agent Flutter swarm via MCP Bridge — delegate tasks, monitor status, review reports, and issue corrections. Uses Router A (Triple Chinese MoA) for long tasks. For Claude Code or Kimi CLI as Executive Controller over Hermes Lead Architect.
-version: 0.2.0
+version: 0.3.0
 author: Hermes
 metadata:
   hermes:
@@ -39,155 +39,64 @@ You control this team through the Lead Architect. Each agent has a specific role
 
 **Key Rule:** NEVER assign a task to the wrong specialist. The State Engineer handles business logic. The Backend Architect handles Supabase. The QA Tester verifies. Delegating to the wrong profile wastes tokens and produces substandard output.
 
-## Your 5 MCP Tools
+## Your 4 MCP Tools (Active on Claude Desktop)
 
-When connected via the MCP Bridge to the Hermes Lead Architect, you have exactly 5 tools (4 delegation + 1 Kanban):
+When the MCP server is connected, you have exactly 4 tools. Each sends a prompt to the Hermes Lead Architect via `hermes chat -q -p flutter-lead-architect` and returns the response directly.
 
-### 1. `lead_delegate` — Start a Task
-
-```
-lead_delegate(
-  task: string,          # Clear task description in English
-  profile?: string,      # Optional: target a specific profile
-  priority?: "low" | "normal" | "high",
-  callback?: string      # Optional: task ID to chain after completion
-) → { delegation_id: string, estimated_tokens: number }
-```
-
-**How to write task descriptions:**
-- Be specific about the deliverable — not "fix the app" but "Fix the subscription screen: the Cancel button does not call the API; check `subscription_provider.dart` line 142."
-- Include file paths when known: "Modify `lib/features/chat/providers/chat_provider.dart` to add error retry logic for failed SSE streams."
-- State constraints: "Must use existing `Platform.environment` pattern for credentials. Do NOT hardcode URLs."
-- Reference decisions: "Follow DEC-024: LLM never computes. All math must be pure Dart."
-
-**Example — Correct:**
-```
-lead_delegate(
-  task: "Fix purchase confirmation insert: the 'purchases' table column is 'purchase_date' 
-         (not 'date'). Modify lib/features/purchase/services/purchase_service.dart line 87 
-         to use the correct column name. Verify with direct Supabase query after fix.",
-  profile: "flutter-backend-db-architect"
-)
-```
-
-**Example — Wrong:**
-```
-lead_delegate(task: "fix the purchase bug")
-// Too vague. Which bug? Which file? The swarm will waste tokens guessing.
-```
-
-### 2. `lead_status` — Check Progress
+### 1. `lead_delegate` — Delegate a Task
 
 ```
-lead_status(delegation_id: string) → {
-  status: "pending" | "running" | "completed" | "failed",
-  started_at: string?,
-  completed_at: string?,
-  current_phase: string?,
-  tokens_used: number
-}
+lead_delegate(task: string, priority?: "low"|"medium"|"high"|"critical", epic?: string)
 ```
 
-**When to use:**
-- After delegating, don't immediately check status — wait 30-60 seconds first
-- Long tasks (>5 minutes): check every 2-3 minutes
-- If status is "running" for >10 minutes, it may be stuck — use `lead_correct` to redirect
+The most important tool. Sends a structured task to the Lead Architect. The Lead triages, creates a Kanban task, assigns to the right profile, and returns the task ID, assignee, and next steps — all in the response text.
 
-**Interpreting statuses:**
-- `pending`: Lead hasn't started yet — Kanban queue, wait
-- `running`: Active execution — swarm is working
-- `completed`: Done — ready for `lead_report`
-- `failed`: Error occurred — request report for error details
+**Parameters:**
+- `task` (required): The task description. Be SPECIFIC — file paths, expected behavior, constraints.
+- `priority` (default: "medium"): Task urgency on the Kanban board.
+- `epic` (optional): EPIC name to group this task under.
 
-### 3. `lead_report` — Get Results
+**How to write effective task descriptions:**
+- ✅ "Fix purchase confirmation: column is 'purchased_at' not 'date'. Modify purchase_service.dart line 87."
+- ❌ "fix the purchase bug" — Too vague. The swarm will waste tokens guessing.
+- Include file paths when known, state constraints, reference decisions (DEC-024, etc.)
 
-```
-lead_report(delegation_id: string) → {
-  summary: string,
-  artifacts: [{ path: string, type: string }],
-  decisions: [{ id: string, summary: string }],
-  tests: { passed: number, failed: number, coverage?: number },
-  verification: string,  // How the swarm verified this
-  token_cost: { input: number, output: number, model: string }
-}
-```
+**Reading the response:** The Lead returns the task result directly in the response. Look for: task ID, assignee, status, and any artifacts. There is NO separate `lead_status` or `lead_report` tool — everything comes back in the response text.
 
-**Review checklist:**
-1. Read the summary first — does it match what you asked?
-2. Check decisions — new DEC entries mean architecture changes
-3. Check tests — zero tests is a red flag for the QA profile
-4. Check verification — did they test on real device? (LL-010 rule)
-5. Check token cost — unusually high cost means the task was poorly specified
-
-### 4. `lead_correct` — Issue Corrections
+### 2. `lead_kanban_view` — View the Kanban Board (Read-Only)
 
 ```
-lead_correct(
-  delegation_id: string,
-  feedback: string,
-  mode: "append" | "replace" | "new_task"
-) → { correction_id: string }
+lead_kanban_view()
 ```
 
-**Modes explained:**
-- `append`: Add to existing work. "Add Arabic RTL validation to the form fields you just created."
-- `replace`: The work is wrong. "You used `purchase_date` but the column is `purchased_at`. Redo the insert logic."
-- `new_task`: The task is too big — split off a new delegation. "The error handling is correct. Now open a new task for the loading state animation."
+Shows the current Kanban board — every task with ID, status, assignee, priority, and blockers. The Lead returns a formatted table.
 
-**Correction best practices:**
-- Always reference the original `delegation_id`
-- Be specific about what's wrong and what's expected
-- If the swarm made the same mistake twice, check your task description — it may be ambiguous
-- One correction per issue — don't bundle 5 fixes in one `lead_correct`
+**Use before delegating** to avoid creating duplicate tasks. Use when the swarm seems slow to identify bottlenecks.
 
-### 5. Kanban Board (Read-Only)
+**This is READ-ONLY.** You cannot modify tasks through this tool. Use `lead_kanban_reprioritize` to change priority.
 
-These tools give you visibility into the swarm's workload WITHOUT interfering with the Lead Architect's distribution authority. You can SEE everything but you cannot MOVE, DELETE, or REPRIORITIZE tasks that aren't yours.
+### 3. `lead_kanban_cancel` — Cancel a Task
 
 ```
-lead_kanban_view() → {
-  columns: [
-    { name: "Backlog", tasks: [{ id, title, assigned_to, priority, age }] },
-    { name: "In Progress", tasks: [...] },
-    { name: "Review", tasks: [...] },
-    { name: "Done", tasks: [...] }
-  ],
-  bottlenecks: [{ profile: "flutter-qa-tester", queued: 5, warning: true }],
-  swarm_health: "healthy" | "overloaded" | "idle"
-}
-
-lead_kanban_status(task_id?: string) → {
-  task: { id, title, status, assigned_to, started_at, dependencies, blocks },
-  chain: [{ task_id, status }]  // if part of a dependency chain
-}
+lead_kanban_cancel(task_id: string, reason?: string)
 ```
 
-**When to use Kanban tools:**
+Cancels a task on the Kanban board by its ID. Marks it as cancelled and notifies the assignee. The `task_id` comes from `lead_kanban_view` output.
 
-| Situation | Tool | Action |
-|-----------|------|--------|
-| Before delegating | `lead_kanban_view` | Check if task already exists or related task is running |
-| Swarm seems slow | `lead_kanban_view` | Check bottlenecks — is QA overwhelmed? |
-| Delegation weird result | `lead_kanban_status` | Trace dependency chain — what blocked it? |
-| Before canceling | `lead_kanban_status` | Check if task has dependent tasks that would break |
+**⚠️ Only cancel YOUR tasks.** Do not cancel tasks delegated by a human or by another controller. Check the task ownership before canceling.
 
-**Why Read-Only:**
+### 4. `lead_kanban_reprioritize` — Change Priority
 
-| Operation | Allowed? | Reason |
-|-----------|----------|--------|
-| View board | ✅ | Situational awareness |
-| View task status | ✅ | Trace dependencies |
-| Cancel your own task | ✅ | Via `lead_correct(mode="new_task")` — not direct Kanban cancel |
-| Reassign a task | ❌ | Lead Architect owns distribution |
-| Reprioritize | ❌ | Lead decides what's urgent |
-| Delete a task | ❌ | Audit trail — irreversible |
-| Decompose a task | ❌ | Lead's core job — do not undermine SOUL |
+```
+lead_kanban_reprioritize(task_id: string, new_priority: "low"|"medium"|"high"|"critical")
+```
 
-**Bottleneck response protocol:**
-1. If `swarm_health: "overloaded"` — do NOT delegate new tasks. Wait or check bottlenecks.
-2. If a profile has 3+ queued tasks — consider delegating the NEW task to a different profile.
-3. If all profiles are busy — batch your corrections instead of sending them one by one.
-4. NEVER "clear the queue" — Kanban tasks exist for a reason. Only cancel your own.
+Changes the priority of an existing task on the Kanban board. Updates the board and notifies the assignee.
+
+**When to reprioritize:**
+- Critical bug discovered → bump to "critical"
+- Blocked task waiting on dependency → keep at current priority
+- Low-priority task aging >3 days → consider bumping or canceling
 
 ## Router A — The Economic Model for Long Tasks
 
@@ -230,31 +139,13 @@ For complex, multi-phase tasks, use the **Router A** pattern:
 ### Router A Protocol:
 
 **Step 1 — Think (Opus 4.8):**
-```
-lead_delegate(
-  task: "[FULL TASK DESCRIPTION WITH CONSTRAINTS]",
-  priority: "high"
-)
-→ Get delegation_id
-→ Wait for status: "completed"
-→ lead_report() 
-→ Read the plan/spec the Lead generated
-```
+Use `lead_delegate` with the full task description. The Lead returns the plan/spec directly. No separate report tool needed.
 
-**Step 2 — Execute (Swarm):**
-The Lead architect automatically decomposes the plan into parallel tasks, dispatches them to the 3-model MoA (DeepSeek + GLM + Qwen), and collects results.
+**Step 2 — Correct (Sonnet 5):**
+Use `lead_delegate` again with correction instructions: "The previous task [task_id] needs changes: [specific fixes]." Reference the original task ID so the Lead knows this is a correction, not a new project.
 
-**Step 3 — Correct (Sonnet 5):**
-```
-lead_correct(
-  delegation_id: "<id>",
-  feedback: "[SPECIFIC ISSUES FOUND]",
-  mode: "replace"  // or "append" if minor
-)
-```
-
-**Step 4 — Loop:**
-Steps 2-3 repeat until the report passes review. Maximum 3 correction cycles — if still failing after 3 rounds, the task specification is likely flawed.
+**Step 3 — Verify:**
+Use `lead_kanban_view` to confirm the task is Done. Check the response for verification details.
 
 ## Profile Selection Guide
 
@@ -281,7 +172,7 @@ Steps 2-3 repeat until the report passes review. Maximum 3 correction cycles —
 
 ## Quick Reference: Common Commands
 
-```bash
+```
 # Deploy a feature
 lead_delegate(task="Add biometric auth to login screen. Use local_auth package. 
   Follow DEC-017: guest-first pattern — biometric should be optional, not required.")
@@ -289,29 +180,30 @@ lead_delegate(task="Add biometric auth to login screen. Use local_auth package.
 # Fix a bug with specific file
 lead_delegate(task="SSE stream disconnects after 30s idle. Check chat_provider.dart 
   line 156: add keepAlive ping every 25s. Verify with device test.",
-  profile="flutter-state-engineer")
+  priority="high")
 
 # Audit security before release
 lead_delegate(task="Full zero-trust audit of RC6: check all API keys, RLS policies, 
-  hardcoded credentials. Report findings with severity levels.",
-  profile="flutter-zero-trust-auditor")
+  hardcoded credentials. Report findings with severity levels.")
 
-# Check what's happening
-lead_status(id="del_abc123")
+# Check the Kanban board
+lead_kanban_view()
 
-# Get the full report
-lead_report(id="del_abc123")
+# Cancel a stuck task
+lead_kanban_cancel(task_id="TSK-042", reason="Blocked on external dependency — revisit next sprint")
 
-# Redirect work
-lead_correct(id="del_abc123", feedback="DEC-010 mandates soft delete. 
+# Bump priority on a critical task
+lead_kanban_reprioritize(task_id="TSK-042", new_priority="critical")
+
+# Issue a correction (re-delegate with fix instructions)
+lead_delegate(task="Correction to TSK-042: DEC-010 mandates soft delete. 
   You used hard DELETE. Change to is_deleted flag pattern.",
-  mode="replace")
+  priority="high")
 ```
 
 ## Session Recovery
 
 If you lose context between sessions, always:
-1. Run `lead_swarm_status()` to see what's currently running
-2. Check the Kanban board for pending tasks
-3. Resume from the oldest incomplete delegation
-4. Never re-delegate a task that's already running
+1. Run `lead_kanban_view()` to see what's currently on the board
+2. Resume from the oldest incomplete task
+3. Never re-delegate a task that's already running
