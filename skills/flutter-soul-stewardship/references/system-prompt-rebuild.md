@@ -11,7 +11,7 @@ Sections are added to SOUL.md over time. The config.yaml `agent.system_prompt` i
 ```python
 import yaml
 
-config_path = "/Users/abdurrahmanjahfali/.hermes/profiles/<profile-name>/config.yaml"
+config_path = "<profile-home>/.hermes/profiles/<profile-name>/config.yaml"
 
 # 1. Read current config
 with open(config_path, 'r') as f:

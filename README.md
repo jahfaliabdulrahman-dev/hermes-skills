@@ -2,6 +2,7 @@
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Skills](https://img.shields.io/badge/skills.sh-11%20skills-6366f1)](https://skills.sh)
+[![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ea4aaa.svg)](https://github.com/sponsors/jahfaliabdulrahman-dev)
 
 **A curated collection of battle-tested agent skills forged in production Flutter projects (CarSah, Hermex Android, Azdal). Every pattern, pitfall, and protocol earned through real debugging sessions — 48 documented patterns and counting.**
 
@@ -78,6 +79,17 @@ Every skill in this repository was born from a production failure that became a 
 - **SOUL Quality Conundrum:** EPIC-001 failed in 27 minutes because 2-3 line SOUL.md files gave agents no identity. After rewriting SOULs to 150-581 lines, EPIC-002 succeeded. → `flutter-soul-stewardship` is the real governance — not constitutional courts, but strong agent identity.
 
 **We don't ship "best practices." We ship scar tissue.**
+
+---
+
+## Support
+
+These skills are free and open-source (Apache 2.0). If they save you hours of debugging, consider supporting the work:
+
+- 💖 [GitHub Sponsors](https://github.com/sponsors/jahfaliabdulrahman-dev) — recurring support
+- ☕ Buy Me a Coffee — coming soon
+
+Every contribution funds more battle-tested patterns, device verification, and new skills.
 
 ---
 

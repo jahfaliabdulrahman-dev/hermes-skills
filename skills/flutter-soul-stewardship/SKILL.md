@@ -170,7 +170,7 @@ patch(
 If that also fails, use Python via terminal (bypasses all tool guards):
 ```bash
 python3 << 'PYEOF'
-path = "/Users/abdurrahmanjahfali/.hermes/profiles/flutter-state-engineer/SOUL.md"
+path = "<profile-home>/.hermes/profiles/flutter-state-engineer/SOUL.md"  # e.g. /Users/<you>/.hermes/profiles/...
 with open(path, 'r') as f:
     content = f.read()
 old = "exact text to replace"
@@ -232,20 +232,34 @@ Changes that apply to ALL profiles should be identical. Copy-paste the same text
 ### Profile-Specific Sections
 Some SOUL sections are profile-specific (e.g., State Engineer's §14 Transaction Boundary Pre-Check). When making cross-profile changes, SKIP sections that don't apply to certain profiles. Do not blindly add State Engineer rules to the QA Tester.
 
+## The Stock-Before-Modification Rule
+
+**Discovered:** 2026-07-18 — google-workspace skill audit
+
+Before modifying any bundled skill, diff it against stock and verify your changes actually improve it. Our google-workspace modifications had downgraded API scopes (drive→readonly), deleted 16 command examples, and weakened safety rules — all while the stock version was objectively correct. The header "fix" (removing `.lower()`) made the code case-sensitive instead of case-insensitive.
+
+**Rule:** Run `hermes skills diff <name>` BEFORE editing. If the only changes are personal preferences, don't modify. If the skill genuinely needs customization, add without deleting stock content.
+
+## Governance Confound — SOUL Quality > Constitutional Scaffolding
+
+**Discovered:** 2026-07-18 — Hermes swarm governance audit
+
+**Insight:** A swarm-governance audit revealed the constitution.yaml was symlinked to all 10 profiles but had ZERO active uses: no cron jobs, no enforcement, no profile ever loaded the skill. The REAL difference between EPIC-001 (failure) and t_65c0f769 (success): SOUL files grew from 2-3 lines to 91-581 lines during the same period. Before attributing multi-agent performance to any governance mechanism, verify the SOUL baseline — a strong SOUL does more than any constitution.
+
 ## Quick Reference: What Each Profile Owns
 
 | Profile | SOUL.md lines | Signature sections |
 |---------|---------------|-------------------|
-| flutter-lead-architect | ~180 | Orchestration, Conflict Resolution, Stub Detection Gate, Known-Bug Enforcement, Soul Stewardship |
-| flutter-product-steward | ~79 | PRD ownership, Gherkin, scope boundaries |
-| flutter-ui-ux-designer | ~110 | Screen states, design tokens, RTL/LTR |
-| flutter-backend-db-architect | ~202 | Isar schema, ACID, writeTxn rules |
-| flutter-state-engineer | ~283 | Transaction Boundary Pre-Check, Stub Prohibition, Test Preservation |
-| flutter-qa-tester | ~216 | TestSprite E2E, credit management, test layers |
-| flutter-zero-trust-auditor | ~156 | 10 mandatory attack vectors, hostile audit rules |
-| flutter-devops-release-engineer | ~82 | CI/CD, release gates, secrets management |
-| flutter-documentation-steward | ~62 | Spec pack maintenance, DEC-045 stage sync gate, lessons learned, cross-reference integrity |
-| flutter-curiosity-hunter | ~143 | SCSI Layer 1 — bug hunter, pattern scanner, gatekeeper, per-board guardian, Gatekeeper Protocol, Truth Check, Test Impact Check |
+| flutter-lead-architect | ~581 | Orchestration, Conflict Resolution, Stub Detection Gate, Known-Bug Enforcement, Soul Stewardship |
+| flutter-product-steward | ~131 | PRD ownership, Gherkin, scope boundaries |
+| flutter-ui-ux-designer | ~144 | Screen states, design tokens, RTL/LTR |
+| flutter-backend-db-architect | ~240 | Isar schema, ACID, writeTxn rules |
+| flutter-state-engineer | ~331 | Transaction Boundary Pre-Check, Stub Prohibition, Test Preservation |
+| flutter-qa-tester | ~295 | Project-native test layers (analyze/test/device), regression detection |
+| flutter-zero-trust-auditor | ~225 | 10 mandatory attack vectors, hostile audit rules |
+| flutter-devops-release-engineer | ~160 | CI/CD, release gates, secrets management |
+| flutter-documentation-steward | ~91 | Spec pack maintenance, DEC-045 stage sync gate, lessons learned |
+| flutter-curiosity-hunter | ~151 | SCSI Layer 1 — bug hunter, pattern scanner, gatekeeper |
 
 ## Obsidian Log Location
 

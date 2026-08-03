@@ -159,6 +159,7 @@ When the user asks "compare against what we have," benchmark the third-party rep
 Table template and real example in `references/comparison-audit-template.md`.
 
 ## Pitfalls
+- **Skills.sh ecosystem:** See `references/skills-ecosystem-audit.md` for the full methodology on auditing skills published on skills.sh. Key trap: short URLs like `/s/<name>` can return HTTP 200 for non-existent skills because Next.js renders a shell page. Always cross-reference the sitemap and verify GitHub source.
 - High star count ≠ quality (viral drops can hit 100K+ stars in days)
 - "Source-available" ≠ "open source" (no license = all rights reserved)
 - Disabled issues = controlled narrative, not community-driven
@@ -172,3 +173,5 @@ Table template and real example in `references/comparison-audit-template.md`.
 - When API tools are unavailable, use terminal with curl, saving to temp files before processing
 - **AI skills repos: see `references/ai-skills-ecosystem-audit.md`** — Claude/Cursor/Codex marketplace repos are predominantly markdown, not software. File-type composition is the #1 signal.
 - **Single-dominant-contributor (>70% commits) = solo project** regardless of listed contributor count. Check distribution, not headline numbers.
+- **Confounding variable trap (self-auditing):** When auditing your OWN skills/repos before publishing, the #1 failure is attributing success to the wrong variable. Example: a governance skill claimed constitutional scaffolding improved EPIC completion — but zero profiles ever loaded it, zero cron jobs ran, and SOUL rewrites (2→581 lines) happened simultaneously. Always verify: did the thing we CLAIM fixed it actually get USED? Timeline match? Simultaneous changes that better explain the outcome?
+- **Skills ecosystem repos are predominantly markdown:** Claude/Cursor/Codex marketplace repos can have 9,500+ entries that are just SKILL.md files. File-type composition is the #1 signal. Check for actual code, scripts, and references — not just markdown wrappers. Skills.sh short URLs like `/s/<name>` can return HTTP 200 for non-existent skills (Next.js renders a shell page) — always cross-reference sitemaps.

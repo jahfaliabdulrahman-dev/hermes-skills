@@ -135,6 +135,8 @@ hermes skills diff <name>
 echo "y" | hermes skills reset <name> --restore
 ```
 
+See `references/2026-07-18-skill-audit-findings.md` for the full 8-skill audit results and the google-workspace regression analysis.
+
 ---
 
 ## Phase 4: Profile Swarm Sync
@@ -226,6 +228,7 @@ hermes skills publish <path> --to clawhub
 - **PITFALL 4: Path inconsistency.** Skills may be at `~/.hermes/skills/<name>/` OR `~/.hermes/skills/<category>/<name>/`. Always `find` before publishing.
 - **PITFALL 5: PromptScript never supports global installs.** Ignore those errors — they're expected.
 - **PITFALL 6: specification-writing said 18 files but projects use 22+.** Updated to v2.0 (27+ files across 22 slots). Ensure this stays current as projects evolve.
+- **PITFALL 7: Cross-project lesson fragmentation.** LL-009/010/011 were discovered in Azdal's `app-spec/00_lessons_learned.md` but never promoted to the central `flutter-lessons-patterns` skill — Claude was saving lessons to project-internal files instead of the cross-project repository. During every sync cycle, check ALL active project `app-spec/00_lessons_learned.md` files (Azdal, Hermex, CarSah) for orphaned LL/DEC entries not yet in the central skill.
 
 ---
 
