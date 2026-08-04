@@ -43,6 +43,27 @@
 
 ---
 
+## 💎 Premium — Spec Pack Generator ($19)
+
+The skills above are **free and open-source** (Apache 2.0) — that's the framework.
+
+**Premium** is the automation that builds and verifies the entire Spec Pack for you:
+
+| Feature | Free (GitHub) | Premium ($19) |
+|---------|:-------------:|:--------------:|
+| `specification-writing` SKILL.md framework | ✅ | ✅ |
+| `generate_spec_pack.py` — creates all 27+ files | ❌ | ✅ |
+| `verify_spec_pack.py` — exit-code compliance gate | ❌ | ✅ |
+| Templates + landing README | ❌ | ✅ |
+| Priority updates & support | ❌ | ✅ |
+
+**Buy once, use forever.** Instant digital delivery — no subscription, no account required.
+
+- 🔗 **Purchase:** [spec-pack-premium on Lemon Squeezy](https://lemonsqueezy.com) *(store link goes live with your account)*
+- 🛒 **Also listed:** [MCP Market](https://mcpmarket.com)
+
+---
+
 ## Install
 
 ### Install all skills at once
