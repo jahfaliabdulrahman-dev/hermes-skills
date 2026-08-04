@@ -59,7 +59,7 @@ The skills above are **free and open-source** (Apache 2.0) — that's the framew
 
 **Buy once, use forever.** Instant digital delivery — no subscription, no account required.
 
-- 🔗 **Purchase:** [spec-pack-premium on Lemon Squeezy](https://lemonsqueezy.com) *(store link goes live with your account)*
+- 🔗 **Purchase:** [spec-pack-premium on Lemon Squeezy](https://jahfali-skills.lemonsqueezy.com)
 - 🛒 **Also listed:** [MCP Market](https://mcpmarket.com)
 
 ---
