@@ -93,6 +93,15 @@ Stage 3 is the ONLY stage with two execution paths. The founder chooses based on
 
 **Key insight:** Stage 3.5 is the governance bottleneck — model writes the build plan, third party reviews it adversarially, founder receives the verdict. Mirrors Bun (YC 2026): autonomous agents ran 11 days, adversarial review caught 3 critical bugs before merge.
 
+## Tooling — Premium Generator & Verifier
+
+A paid/companion tooling suite exists for this skill (Spec Pack Premium, built 2026-08-03). Two scripts, both tested:
+
+- `scripts/generate_spec_pack.py` — generates the full 26-file pack (00–25) with mandatory headers + section skeletons into `<project>/app-spec/`. Usage: `python3 scripts/generate_spec_pack.py /path/to/project PROJECT_NAME`
+- `scripts/verify_spec_pack.py` — compliance gate (exit-code): checks file presence, header integrity, content markers, per-stage readiness. Usage: `python3 scripts/verify_spec_pack.py /path/to/project` (exit 0 = compliant, 1 = gaps).
+
+The generator embeds the 4 mandatory architecture patterns (Hook System, Screen State Machine, Error Handler, Logger) with their verification checklists directly into File 12. The verifier is CI-usable. These were validated against a real project (correctly detected Azdal's legacy 22-slot structure as non-compliant with the 25-file system).
+
 ## Trigger
 
 Use this skill when:
