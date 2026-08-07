@@ -1,7 +1,7 @@
 ---
 name: skill-ecosystem-sync
 description: Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to all 10 Flutter swarm profiles. This is the ONE skill to load before any "update skills" task. Captured from the 2026-07-18 marathon session.
-version: 1.1.0
+version: 1.2.0
 author: Sulaiman
 tags: [skills, update, devops, npx, clawhub, hermes, profiles, sync, maintenance]
 ---
@@ -22,11 +22,46 @@ Complete systematic workflow for updating ALL skills across the ecosystem. This 
 
 Our skills live at `jahfaliabdulrahman-dev/hermes-skills` on GitHub.
 
+### Pre-step: ensure repo clone exists
+
+`/tmp/` is cleared on reboot — the clone may be gone. If missing, clone fresh:
+
+```bash
+[ -d /tmp/hermes-skills ] || git clone https://github.com/jahfaliabdulrahman-dev/hermes-skills.git /tmp/hermes-skills
+```
+
 ### Pull: GitHub → Local (download any remote changes)
 
 ```bash
 cd /tmp/hermes-skills && git pull
 ```
+
+### CRITICAL — Direction Check BEFORE local → repo rsync
+
+The sync is NOT always local → repo. A local skill can regress (digest rewrite, restored old backup) below the repo's canonical version. **Before rsyncing, compare versions both ways:**
+
+```bash
+for skill in <published list>; do
+  repo_ver=$(git -C /tmp/hermes-skills show HEAD:skills/$skill/SKILL.md 2>/dev/null | grep -m1 '^version' | awk '{print $2}')
+  local_ver=$(find ~/.hermes/skills -maxdepth 3 -type d -name "$skill" -exec grep -m1 '^version' {}/SKILL.md \; 2>/dev/null | awk '{print $2}')
+  echo "$skill: repo=$repo_ver local=$local_ver"
+done
+```
+
+If `repo > local` (version higher, or repo has newer LL/pattern entries), **restore repo → local** instead:
+`rsync -a /tmp/hermes-skills/skills/$skill/ ~/.hermes/skills/<category>/$skill/` — do NOT push the regression.
+
+**Real case (2026-08-08):** local `flutter-lessons-patterns` was a 2.9.0 digest (112 lines, only LL-043..049) while the repo had canonical 2.16.0 (2087 lines, LL-043..051 + 18 references). Blind local→repo push would have deleted ~35 accumulated patterns from the public repo. Direction was repo → local; references were byte-identical so nothing was lost.
+
+### Pre-push personal-path scan (SECURITY GATE)
+
+Local edits often reintroduce hardcoded personal paths into public files. Before committing, scan:
+
+```bash
+grep -rn "/Users/abdurrahmanjahfali\|<your-home>" /tmp/hermes-skills/skills/ | grep -v "\.git"
+```
+
+Any hit = revert that file to HEAD (`git checkout -- <file>`) AND restore the generalized placeholder into the LOCAL copy too — otherwise the next sync re-dirties it. Real case (2026-08-08): `flutter-soul-stewardship` + `system-prompt-rebuild.md` had `/Users/abdurrahmanjahfali/...` replacing `<profile-home>` placeholders; `azdal-full-structure.md` had `~/Projects/Azdal/` replacing `~/Projects/<project>/`.
 
 ### Push: Local → GitHub (upload our improvements)
 
@@ -39,7 +74,8 @@ cd /tmp/hermes-skills
 for skill in flutter-android-build-system flutter-design-anti-patterns \
   flutter-isar-clean-arch-setup flutter-lessons-patterns flutter-patterns \
   flutter-soul-stewardship github-project-audit repo-front-door \
-  specification-writing supabase-fullstack skill-ecosystem-sync; do
+  specification-writing supabase-fullstack skill-ecosystem-sync \
+  swarm-executive-controller; do
   
   # Find actual path (skills may be in subdirectories)
   src=$(find ~/.hermes/skills -maxdepth 3 -type d -name "$skill" -exec test -f {}/SKILL.md \; -print | head -1)
@@ -229,6 +265,11 @@ hermes skills publish <path> --to clawhub
 - **PITFALL 5: PromptScript never supports global installs.** Ignore those errors — they're expected.
 - **PITFALL 6: specification-writing said 18 files but projects use 22+.** Updated to v2.0 (27+ files across 22 slots). Ensure this stays current as projects evolve.
 - **PITFALL 7: Cross-project lesson fragmentation.** LL-009/010/011 were discovered in Azdal's `app-spec/00_lessons_learned.md` but never promoted to the central `flutter-lessons-patterns` skill — Claude was saving lessons to project-internal files instead of the cross-project repository. During every sync cycle, check ALL active project `app-spec/00_lessons_learned.md` files (Azdal, Hermex, CarSah) for orphaned LL/DEC entries not yet in the central skill.
+- **PITFALL 8: `find -type d` misses symlinked skills.** `flutter-design-anti-patterns` and `supabase-fullstack` live as symlinks → `~/.agents/skills/<name>`. Use `find -L` or `ls -la ~/.hermes/skills/` to spot them; rsync from the symlink TARGET.
+- **PITFALL 9: `hermes skills check` reports stale `update_available`.** After `hermes skills update <name>` the flag can persist even when content is current. Verify against the official source: `curl -sL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/optional-skills/<path>/SKILL.md | diff - <local>` (path from `hermes skills inspect <name>` or the index cache). Zero diff = flag is stale, ignore.
+- **PITFALL 10: nested skills block the hub updater.** `adversarial-ux-test` sits under `dogfood/` which is BOTH a skill dir (has SKILL.md) and a category — the installer refuses ("Refusing to install into 'dogfood'"). Apply the update manually: fetch SKILL.md from the raw GitHub path above and `cp` it over the local file. Verify with diff.
+- **PITFALL 11: published count drifts.** Repo now exposes 12 skills (swarm-executive-controller joined). Re-run `npx skills add jahfaliabdulrahman-dev/hermes-skills -l` to list; don't trust the count in this doc.
+- **PITFALL 12: marketing repo count drifts.** coreyhaines31/marketingskills is at 49; 4 skills (ads, attribution, influencer-marketing, prospecting) were missing locally as of 2026-08-08. Install any that `comm -23` reports missing; some local dirs are RENAMED (ab-testing→ab-test-setup, cro→form-cro/page-cro/popup-cro, launch→launch-strategy...) — compare by frontmatter `name:` field, not directory name.
 
 ---
 
