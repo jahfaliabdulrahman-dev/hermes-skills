@@ -100,7 +100,7 @@ A paid/companion tooling suite exists for this skill (Spec Pack Premium, built 2
 - `scripts/generate_spec_pack.py` — generates the full 26-file pack (00–25) with mandatory headers + section skeletons into `<project>/app-spec/`. Usage: `python3 scripts/generate_spec_pack.py /path/to/project PROJECT_NAME`
 - `scripts/verify_spec_pack.py` — compliance gate (exit-code): checks file presence, header integrity, content markers, per-stage readiness. Usage: `python3 scripts/verify_spec_pack.py /path/to/project` (exit 0 = compliant, 1 = gaps).
 
-The generator embeds the 4 mandatory architecture patterns (Hook System, Screen State Machine, Error Handler, Logger) with their verification checklists directly into File 12. The verifier is CI-usable. These were validated against a real project (correctly detected Azdal's legacy 22-slot structure as non-compliant with the 25-file system).
+The generator embeds the 4 mandatory architecture patterns (Hook System, Screen State Machine, Error Handler, Logger) with their verification checklists directly into File 12. The verifier is CI-usable. These were validated against a real project (correctly detected a legacy 22-slot structure as non-compliant with the 25-file system).
 
 ## Trigger
 
@@ -194,7 +194,7 @@ Evolved from the 22-slot v2.0 system into a 6-stage, 25-file sequential structur
 > **Governance Rule:** Every Flutter project MUST use `AppLogger` with at least 4 levels (debug, info, warn, error). Raw `debugPrint` for application logging is prohibited. `LogBuffer` must be accessible at runtime for debugging. Error/fatal levels must persist to file via `LogPersister`.
 
 **Verification Gate:**
-- [ ] `AppLogger` replaces all `debugPrint` calls (483 total across projects)
+- [ ] `AppLogger` replaces all `debugPrint` calls (hundreds across projects)
 - [ ] Every class uses `AppLogger.of('Category')` — no manual prefixes
 - [ ] At least 4 log levels in use: debug, info, warn, error
 - [ ] `LogBuffer.query()` works at runtime — filterable by level and category
@@ -294,7 +294,7 @@ Cross-reference:
 
 ### Gate 3 (DESIGN_GATE) — The Critical One
 
-This is the stage the user discovered was missing in CarSah. The rule:
+This is the stage once discovered missing in a real project — the rule:
 
 > **No executable code is written before DESIGN_GATE closes.**
 > The design prototype (`08_design_prototype.md`) must exist and be approved. Colors, wireframes, user journey — all decided and documented. Code without design = rework.
@@ -360,9 +360,8 @@ When receiving a project already in progress:
    ```
    | Project | Spec | Code | Status |
    |---------|------|------|--------|
-   | Hermex Android | ❌ Absent | ✅ Partial (Dio interceptors only) | ❌ No formal pattern |
-   | CarSah | ❌ Absent | ❌ Absent | ❌ Not implemented |
-   | Azdal | ❌ Absent | ❌ Absent | ❌ Not implemented |
+   | Example App A | ❌ Absent | ✅ Partial (HTTP interceptors only) | ❌ No formal pattern |
+   | Example App B | ❌ Absent | ❌ Absent | ❌ Not implemented |
    ```
 
 5. **Only then propose spec additions** — grounded in the real gap, not an assumption
@@ -813,7 +812,7 @@ Every file in `app-spec/` MUST start with this header. The Cross-Reference (trac
 | Field | Rule |
 |-------|------|
 | `# NN — File Title` | `NN` = two-digit file number (00–25). Title = Arabic where natural, English for technical terms. |
-| `Document ID` | `SPEC-NN-{PROJECT}` — project short name (e.g., CARSAH, AZDAL, HERMEX) |
+| `Document ID` | `SPEC-NN-{PROJECT}` — project short code (e.g., MYAPP) |
 | `Version` | Semantic versioning. Start at `1.0.0`. Bump major on structural change, minor on new sections, patch on fixes. |
 | `Status` | `Draft` → `Review` → `Approved` → `Living` (updated continuously after approval) |
 | `Stage` | Emoji + stage number + Arabic name — links every file to its gate |
@@ -838,7 +837,7 @@ Every file in `app-spec/` MUST start with this header. The Cross-Reference (trac
 ```markdown
 # 08 — Design Prototype
 
-> **Document ID:** SPEC-08-CARSAH
+> **Document ID:** SPEC-08-MYAPP
 > **Version:** 1.0.0
 > **Status:** Draft
 > **Stage:** 3 🟠 — التصميم والهوية
@@ -885,7 +884,7 @@ When a file is modified:
 - **Skipping third-party review in Stage 3.5**: The founder reviewing the build plan alone creates a single point of failure. Stage 3.5 requires an independent adversarial reviewer — the founder receives their verdict but is not the sole judge.
 - **Skill content contamination**: Writing project-specific audit data (repo paths, line numbers, DEC entries, project names) into SKILL.md instead of `references/project-landscape.md`. A skill must be reusable by any project. The user rejected 4 skills on 2026-07-26 for this violation.
 - **Untethered skills**: Creating architectural patterns without grounding in official Flutter/Dart documentation. Always run `find-docs` (Context7) and save findings to `references/authoritative-sources.md`.
-- **Skipping DESIGN_GATE**: Writing code before Stage 3 is complete. This caused CarSah to be rebuilt twice. Never again.
+- **Skipping DESIGN_GATE**: Writing code before Stage 3 is complete. This caused a real project to be rebuilt twice. Never again.
 - **Losing detail on rewrite**: When writing a file from scratch, forgetting to include depth from prior versions. Always read the prior version first and preserve its structure.
 - **Missing cross-references**: Spec files should link to each other. File 04 references File 05. File 06 references File 05. File 00 cross-references all others.
 - **Stale contradictions**: When a decision changes, all references across all files must be updated. Use search to find stale mentions.
