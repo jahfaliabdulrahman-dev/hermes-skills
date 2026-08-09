@@ -299,6 +299,19 @@ This is the stage the user discovered was missing in CarSah. The rule:
 > **No executable code is written before DESIGN_GATE closes.**
 > The design prototype (`08_design_prototype.md`) must exist and be approved. Colors, wireframes, user journey — all decided and documented. Code without design = rework.
 
+**PRECISION — what "no code" means (hard-learned):** the gate forbids
+APP SOURCE CODE (lib/, src/, app logic, behavior tests). It does NOT forbid
+— and in fact REQUIRES — the design agent to write spec artifacts: reflecting
+the design artifact onto `07_user_flows_navigation.md` and
+`08_design_prototype.md`, exporting visual references, element checklists,
+and tokens into the repo. Refusing to touch spec files in the design phase on
+the grounds of "stage 3.5 not complete" is a MISAPPLICATION of this gate: it
+forces the founder to hand-copy design output, and every manual transfer loses
+fidelity. The deciding question is only: does the change touch app source
+code? No → design-stage artifact, write it. Yes → wait for the gates.
+See File 08 §6 (Operational Pipeline) below for the full stage-3 execution
+rules.
+
 ### Gate 3.5 (BUILD_READINESS_GATE) — The Build Lock
 
 This gate prevents the "which feature first?" negotiation that plagued past builds. **It is MANDATORY for BOTH Stage 3 Normal and Fast paths.**
@@ -512,6 +525,58 @@ Beyond the standard MD3 tokens, File 08 MUST include:
 - **User journey walkthrough** — every tap, every transition, documented step by step
 - **Design testing notes** — was it tested on someone? their feedback?
 - **Source/provenance labeling rules** — which assets came from Canva, which from Claude, which are stock
+
+#### §6 Operational Pipeline for Stage 3 (design agent behavior)
+
+The design phase is not just content — it is an operational pipeline. These
+rules prevent the two failure classes that cost real projects rework:
+misclassification (refusing to write spec files) and shape loss (prose that
+ten different implementations can all satisfy).
+
+**Visual references are the binding shape source:**
+- Export one screenshot per screen and COMMIT it into the repo next to the
+  spec. The spec stays the source of RULES (flows, data, logic); the reference
+  is the source of SHAPE (look, spacing, position).
+- Write the conflict rule in the spec text: "on shape conflict, the reference
+  wins."
+- Export state variants per screen (at least default + empty + error) — a
+  single happy-path screenshot leaves the other states to prose.
+- No-build-without-reference: a screen is not buildable until its reference
+  exists; check completeness at Stage 3.5, not during build.
+- The reference is the EXPORTED FILE (versioned artifact), never the agent's
+  memory or its re-description.
+
+**Element checklists, not paragraphs:** for each screen provide a checkbox
+list (brand icon present, back control at declared edge, empty/error/loading
+states defined, fields match the data model). A gate can check a list; it
+cannot audit a paragraph. Missing elements surface as unchecked boxes.
+
+**RTL-safe vocabulary:** default to start/end (logical). "Left" is ambiguous
+in RTL — physical left vs line start are different edges. If physical
+left/right is truly intended, say "physical left, even in RTL" explicitly.
+In Flutter mirror the vocabulary: `AlignmentDirectional`,
+`EdgeInsetsDirectional`, never raw left/right for layout.
+
+**Declared tokens, never derived:** every color/radius/spacing/typography
+value is written explicitly; no seed-based generation (`ColorScheme.fromSeed`)
+for final values — the seed silently produced a near-white tint where the spec
+said white; all tests green, the eye can't tell. Stage 4 pins the declared
+values with a theme/token test so drift fails CI, not the founder's eye.
+
+**Visual acceptance gate (mandatory):** no screen is accepted on code review
+alone. 1) device screenshot of the built screen; 2) the spec reference beside
+it; 3) a numbered diff list; 4) the founder decides fix vs amend the spec —
+never silently. Required step in the build pipeline, not a reviewer's favor.
+
+**Anti-patterns (all hit in the field):**
+| Anti-pattern | Failure | Fix |
+|---|---|---|
+| Design agent refuses spec-file writes before Stage 4 | Founder hand-copies → fidelity loss | Gate 3 precision: spec artifacts ARE stage 3 |
+| Prose-only shape ("center the selector") | Compliant but wrong layout (blank space, floating button) | Visual references + no-build-without-reference |
+| "left" in an RTL app | Back control on wrong edge; lying comment | start/end vocabulary |
+| Derived palette from a seed | Silent spec violation, invisible to tests | Declared tokens + pinned test |
+| "no deviations" without visual comparison | Real deviations found later on device | Visual acceptance gate + honest diff list |
+| Manual re-transfer of design output | Every transfer loses something | Agent reflects its own artifact onto files |
 
 ### Monetization (File 04)
 Must include:
