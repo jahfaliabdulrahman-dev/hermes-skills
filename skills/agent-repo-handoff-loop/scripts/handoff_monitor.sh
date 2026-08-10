@@ -5,7 +5,7 @@
 #
 # Deploy: copy to ~/.hermes/scripts/, edit REPO_PATH + MAILBOX_PATHS, then:
 #   cronjob action=create ... monitor_script=<name>.sh schedule="every 2m"
-REPO_PATH="/Users/abdurrahmanjahfali/Projects/CarSah"
+REPO_PATH="/path/to/the/shared/repo"
 # Paths that, when they change remotely, should wake the agent:
 MAILBOX_PATHS="handoff/claude/ handoff/STATE.md"
 
