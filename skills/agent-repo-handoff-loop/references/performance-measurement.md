@@ -32,6 +32,44 @@ sqlite3 ~/.hermes/state.db "SELECT count(*) FROM messages WHERE session_id='<id>
 
 - Clean win: 1 round + 0-2 new STOPs + messages < ~400 + HOW-map line present
   + the contradiction/evidence notes in the delivery.
+
+## Extracting the improvement story (evidence for a third-party claim)
+
+When the founder asks to PROVE the loop improved (e.g. a research-grade
+appendix: "why does the weak implementer rarely get rejected by the frontier
+auditor"), assemble from the repo — no recollection needed:
+
+1. **Full verdict history** — every review's verdict + STOP tally, oldest →
+   newest (this reveals the inflection):
+   ```bash
+   for f in $(ls -t handoff/claude/*.md); do
+     stops=$(grep -c "STOP-" "$f")
+     verdict=$(grep -im1 "APPROVE\|REQUEST_CHANGES\|BLOCK\|verdict:" "$f" | cut -c1-90)
+     echo "$(basename $f) | STOPs=$stops | $verdict"
+   done
+   ```
+2. **First-delivery STOPs per step** — count STOP-ids filed in the FIRST
+   review of a step's initial SUBMIT (not the fix-round reviews). The trend
+   series (e.g. 17 → 1 → 0 across steps) is the core evidence.
+3. **Inflection timing** — governance commit dates vs the defect data:
+   `git log --format="%h %ad %s" --date=format:"%m-%d %H:%M" --grep="skill map|HOW map|brief|coordinator"`
+   — show that the bad step was BEFORE the layer landed and every step after
+   improved (the causal story is in the dates).
+4. **The auditor's own words** — grep review titles/verdicts for
+   self-corrections ("I over-classified it", "the black screen I dismissed was
+   a real defect") — the strongest qualitative evidence is the STRONG auditor
+   admitting its own errors while the weak implementer's work passes.
+5. **Session effort** — message counts per session (`SELECT count(*) FROM
+   messages WHERE session_id=?`) + birth times, to show the era each step ran
+   in.
+6. **Test growth** — count test declarations directly in the repo now
+   (`grep -rc "testWidgets(\|test(" test/`) plus the historical series from
+   review letters.
+7. **Limitations section — mandatory** (research manners): small samples, the
+   model ran at max effort, the AUDITOR itself matured (its checks got
+   stronger), "rarely rejected" is directional not absolute. An evidence
+   appendix that states its own limits is trusted; one that overclaims is
+   discarded.
 - Partial: 1-2 rounds, moderate STOPs — additions helped, keep tuning.
 - No win: 3+ rounds or many STOPs — re-audit the rails (directive, map,
   auditor checks), not just the model.

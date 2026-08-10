@@ -6,7 +6,7 @@
 # so the founder-side agent can direct-launch the implementer (the path that never failed).
 #
 # Edit these three for your loop:
-REPO="/path/to/the/shared/repo"
+REPO="/Users/abdurrahmanjahfali/Projects/CarSah"
 MAILBOX_PATHS="handoff/claude/ handoff/STATE.md"   # the OTHER agent's mailbox + state
 MARKER="$HOME/.hermes/state/carsah_last_seen_claude"
 

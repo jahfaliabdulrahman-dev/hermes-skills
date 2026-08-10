@@ -12,8 +12,8 @@
 #
 # SESSION must be updated here whenever the implementer session rotates.
 
-SESSION=<your-implementer-session-id>
-REPO=/path/to/the/shared/repo
+SESSION=20260810_091608_ed4a36
+REPO=/Users/abdurrahmanjahfali/Projects/CarSah
 MARKER="$HOME/.hermes/state/carsah_last_seen_claude"
 DIRECTIVE="$HOME/.hermes/scripts/carsah_wake_directive.txt"
 LOG="$HOME/.hermes/state/carsah_wakes.log"

@@ -175,6 +175,18 @@ Rotation recipe:
 6. Retire the old session: `kill -9 <pid>` only after step 1 — SIGTERM alone
    may not take on a hung process.
 
+**Rotate AUTOMATICALLY with a no_agent rotation watchdog (2026-08-10).** The
+manual recipe above works, but the coordinator can own it: a `no_agent` cron
+(every 30m) running `carsah_auto_rotate.sh` (see Support files) fires ONLY
+when all three hold — session messages > ~900 AND the tree is clean (git
+status empty = a delivery boundary) AND the implementer is idle. It then:
+creates the fresh session (lean skills at birth), `sed`-updates `SESSION=` in
+BOTH the auto-wake script and the watcher, kills/restarts the watcher (the
+founder's terminal link points at the new session), wakes the new session with
+the standard directive, logs `ROTATED`, and delivers one English line. The
+three-condition gate is what makes it safe: a mid-edit tree (dirty) blocks
+rotation, so a bloated session always finishes its current delivery first.
+
 Cadence matters too: if the loop is fast and the founder is not watching,
 lengthen the poll interval (2m → 10m) so each wake is meaningful and the
 mailbox has time to settle — cheaper and calmer, same correctness.
@@ -348,18 +360,46 @@ colored by **done ✅ / in-progress 🔄 / next ⏭ / future (faded)**, plus a
 one-line "Next step: BL-XXX" header. Rules that keep it honest:
 
 - **Derive, never commit.** The view is generated ON DEMAND by a script that
-  reads the locked table (for step→BL and EPIC mapping) AND the loop's STATE
-  file (for done/next). A committed derived document drifts and becomes a
-  second, lying source of truth; a script holds no data and cannot lie.
-- Parse the STATE file's locked-sequence line robustly: the listing WRAPS
-  across multiple lines (join following lines until a blank line), done steps
-  appear as numbers/ranges (`12–27a ✅`), the next step is marked with ⏭.
-  Expand ranges → map step→BL through the parsed table.
+  reads the locked table (for step→BL and EPIC mapping) AND the auditor's
+  letters (for done/next — see the SOURCE rule below). A committed derived
+  document drifts and becomes a second, lying source of truth; a script holds
+  no data and cannot lie.
+- STATE.md parsing is the FALLBACK ONLY (a fresh repo with no auditor letters
+  yet). When it is used, parse its locked-sequence/step: lines robustly: the
+  listing WRAPS across multiple lines (join following lines until a blank
+  line), done steps appear as numbers/ranges (`12–27a ✅`), the next step is
+  marked with ⏭ (or `next: \`34\` BL-052 …` in the newer format). Expand
+  ranges → map step→BL through the parsed table. The STATE format is NOT
+  frozen — the implementer changed it at BL-050 (2026-08-10) from a single
+  'Locked sequence' line to separate `step:` / `next:` lines — parse BOTH.
+  Parsing traps: (1) founder-added sub-step rows in the locked table are
+  bolded (`| 15a | **BL-009 …` — the `**` breaks a bare `BL-` regex; allow
+  `\*{0,2}`), so BL-009/064/065/031a/042a silently vanish from the step→BL
+  map; (2) slash-list expansion `re.sub(r"/0*(\d+)", …)` eats leading zeros
+  (`BL-060/061` → `BL-61`); use `/(\d+)` without the `0*`.
 - Render: HTML grid (diffable, opens anywhere) → optionally Chrome headless
   `--screenshot` for a PNG — remember Chrome does NOT expand `~`, pass `$HOME`.
 - The implementer's dirty tree marks the next step as 🔄 in-progress.
 - Re-run the one command after every DEC/delivery — the founder gets "where we
   are + what's next" in one glance, every time, with zero maintenance.
+- **SOURCE = THE AUDITOR'S LETTERS, never the implementer's STATE (founder
+  rule 2026-08-10).** The implementer's STATE.md is a SELF-REPORT — it can
+  mark steps ✅ that are only "SUBMITTED — awaiting review" or even
+  "pending", and the map misrenders (observed: BL-052 written "pending" was
+  shown ✅ done, so the next jumped to BL-066). The swimlane's done set comes
+  from parsing `handoff/claude/*.md`: a step is done iff its letter's
+  `verdict:` contains APPROVE; the primary BL comes from the letter's
+  `step:` line plus riding steps (`BL-XXX (…)` with any parenthesized
+  content). Three GENERAL rules replace any hardcoded override map: (1)
+  step-line primary + riding; (2) body acceptance — in APPROVE letters, a BL
+  within ~60 chars of `accepted|completed|marked ✅` is done (covers early
+  fix rounds whose step line omits the BL — verified with zero leakage into
+  future steps); (3) absorption — `BL-XXX … absorbed` in ANY letter (the
+  absorption is auditor-recorded even in DECIDED relays). STATE.md is NOT
+  consulted (it is a self-reported, format-drifting document — the wrong
+  shape for a tracking source; the swimlane must run with zero surgical
+  intervention). next = the first locked-sequence step not in the approved
+  set.
 
 ## Notifications
 
@@ -533,6 +573,17 @@ monitor hash, zero suppression:
 - This is the pattern's own principle applied to its plumbing: coordination is
   CODE, not conversation. The mailbox made the IMPLEMENTER a commodity; the
   auto-wake makes the COORDINATOR a commodity too.
+- **RACE SAFETY between the wake and the rotate crons (2026-08-10).** Two
+  no_agent coordinators (wake every 5m + rotate every 30m) can fire in the
+  same window at a delivery boundary — the wake would start the OLD bloated
+  session while the rotate creates the NEW one = parallel implementers =
+  the corruption class. Two guards, both in the scripts: (1) a shared lock
+  file (`carsah_loop.lock`) — whichever fires first holds it, the other
+  defers to its next tick; (2) ROTATION PRIORITY — the wake script, before
+  launching, re-checks the rotation conditions (messages > threshold AND
+  tree clean) and DEFERS entirely: the rotate cron will wake a fresh session
+  which processes any pending review itself (the standard directive carries
+  the idempotency guard). Rotation wins at a boundary; wake wins mid-build.
 
 ## CARRY HOLD — a review that defers to the founder is a STOP-light (2026-08-10)
 
