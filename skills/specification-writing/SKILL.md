@@ -177,6 +177,41 @@ Evolved from the 22-slot v2.0 system into a 6-stage, 25-file sequential structur
 | `16_ai_agent_contract.md` (new section) | Explicit technical-debt-vs-feature policy — when a mid-build choice arises between fixing debt or shipping a feature, the policy (not a live debate) decides. |
 | `18_implementation_backlog.md` (each step) | **Per-step HOW map — NARROWED form (one line per step, written at 3.5):** the line carries ONLY what cannot be derived from elsewhere — (a) the files the step touches, (b) a POINTER to the governing section (e.g. "see 17 §3.1", "see DEC-004"), (c) step-specific pitfalls not derivable elsewhere (e.g. "stepNumber is 1-based"). NO rephrasing of spec content: the pointer cannot contradict its target, but a rephrased instruction can drift (measured: duplicated instructions are the project's most reliable defect generator — a line in 17 vs DEC-011, a line in 12 vs it, stale APK fingerprints). Full-form HOW lines were audited against 52 prior review findings and would NOT have prevented the logic/guard defect classes — those are caught by automated guards, not more prose. |
 
+**The locked sequence has two READ views — generate, never commit.** A long
+dependency-ordered table is hard to read from two angles at once (the build
+story vs where each work-type lands). Provide two DERIVED views, generated ON
+DEMAND from the locked table by a small script (one that parses the table +
+the work-type/EPIC sections and prints both): (1) the sequence view — step |
+BL | work-type | why — the build story; (2) the swimlane view — which work-type
+lands where across the sequence, including deliberate splits (a privacy EPIC
+may appear at step 28 and again at 37-38 because storage-before-UI outranks
+category contiguity). NEVER commit a derived document: a committed derived
+file drifts from the table and becomes a second, lying source of truth; a
+script holds no data and cannot drift. The table stays the single source of
+truth; the views are printed from it on demand (one command after any DEC).
+Working generator (spec-pack convention, parse + both views + `--html` visual):
+`scripts/build_sequence_view.py`.
+
+**Make the derived views LIVE, not static (validated 2026-08-10).** The
+founder's real need is "what is the NEXT step" — a static table does not
+answer it. Have the generator also read the project's running STATE file
+(done steps as numbers/ranges, next marked ⏭ — the listing may wrap across
+several lines: join following lines until a blank line) and color the
+swimlane accordingly: done ✅ / in-progress 🔄 (a dirty tree means the next
+item is being edited) / next ⏭ (highlighted) / future (faded), with a
+one-line "Next step: BL-XXX" header. The founder reads the whole build at a
+glance — no re-reading the backlog to answer "where are we" (their own words:
+"هذي المرة الوحيدة اللي أحس إني فيها فاهم — هذا ما كنت أحتاجه لأعرف ماهي
+الخطوة التالية").
+
+**Work-type (EPIC) ids are audit-trail labels — freeze them mid-build.**
+Reviews, DECs, and handoff state all reference work-type ids; renumbering
+mid-build manufactures label mismatches — the same failure class as a review
+label contradicting the locked table. Confusing numbering (e.g. a
+localization EPIC appearing before the data EPIC because localization is an
+early dependency) is EXPLAINED by the derived views, not fixed by renumbering.
+Renumber only at post-launch cleanup, with a mapping table.
+
 **Why this exists:** Past build attempts hit repeated mid-build negotiation ("which feature first?", "fix this debt now or later?") despite having a spec pack — because the pack had priorities but no locked order and no debt policy. Stage 3.5 closes that gap once, before coding, instead of re-litigating it feature by feature. Deliberately lightweight (a dependency graph + one sequence + one policy) rather than formal construction-style scheduling (Gantt/CPM), which would reintroduce the process-overhead trap.
 
 ### Stage 4: MVP 🔵 — Files 09–18
@@ -893,3 +928,5 @@ When a file is modified:
 - **LL vs DEC separation**: Lessons (LL) go in `20_lessons_learned.md`. Decisions (DEC) go in `19_decision_log.md`. Never mix them.
 - **Stage jumping**: Creating Stage 4 files before Stage 2 is complete. Each stage gates the next — no exceptions.
 - **Empty ≠ Absent**: An empty file is a placeholder with intent. An absent file is a hidden assumption. Create empty, never leave absent.
+- **Renumbering work-type (EPIC) labels mid-build**: Review/DEC/state references go stale; label mismatches breed confusion (the same class as a review note contradicting the locked table). Freeze labels mid-build; explain confusing numbering with derived views; renumber only at post-launch cleanup with a mapping table.
+- **Committing derived views of the locked table**: A committed derived file drifts from the source and becomes a second, lying truth. Generate views on demand from the table with a script — a script cannot drift.
