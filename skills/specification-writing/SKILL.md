@@ -1,7 +1,7 @@
 ---
 name: specification-writing
-description: Write and maintain product specification files following the AI-Agent App Build Specification Pack framework. Covers the 25-file, 6-stage sequential structure (00–25), mandatory file header template with Cross-Reference traceability, depth requirements, and the NO PROCEDURAL REDUCTION rule. Use when creating or updating any app-spec file, writing PRDs, design systems, user flows, monetization specs, risk registers, financial models, swarm playbooks.
-tags: [specification, prd, product-discovery, design-system, user-flows, monetization, risks, financial-model, documentation, swarm, zero-trust]
+description: Write and maintain product specification files following the AI-Agent App Build Specification Pack framework. Covers the 24-file, 6-stage sequential structure (00–24), mandatory file header template with Cross-Reference traceability, depth requirements, and the NO PROCEDURAL REDUCTION rule. Use when creating or updating any app-spec file, writing PRDs, design systems, user flows, monetization specs, risk registers, financial models.
+tags: [specification, prd, product-discovery, design-system, user-flows, monetization, risks, financial-model, documentation, zero-trust]
 version: "3.4.0"
 ---
 
@@ -120,7 +120,7 @@ Every project MUST pass through these 6 stages in order. A flaw in any stage aff
 | 3.5 🟤 | **جاهزية البناء (Build Readiness)** | BUILD_READINESS_GATE | Lock dependency graph + one build sequence (18) + technical-debt-vs-feature policy (16). **No code until this closes.** Deliberately lightweight — a dependency graph + one sequence + one policy, not Gantt/CPM. |
 | 4 🔵 | **MVP** | MVP_GATE | PRD, data model, architecture, security, testing, backlog. Build minimum. **Requires DESIGN_GATE AND BUILD_READINESS_GATE both closed.** |
 | 5 🟣 | **التطوير والتحسين (Iteration)** | ITERATE_GATE | Decision log, lessons learned, red team audit. Improve from real feedback. |
-| 6 ⚫ | **النشر والإنتاج (Production)** | PRODUCTION_GATE | Admin panel, support ops, capabilities inventory, swarm playbook. Go live. |
+| 6 ⚫ | **النشر والإنتاج (Production)** | PRODUCTION_GATE | Admin panel, support ops, capabilities inventory. Go live. |
 
 Each stage has a status: ✅ Complete | 🔄 In Progress | ⏳ Blocked (waiting on previous stage) | 🚨 Missing (gap!)
 
@@ -322,7 +322,6 @@ Cross-reference:
 | 22 | `22_admin_panel.md` | Admin dashboard, moderation tools, analytics views, role-based access |
 | 23 | `23_support_operations.md` | On-call procedures, incident response, escalation paths, FAQ maintenance |
 | 24 | `24_active_capabilities.md` | Current feature status — the accurate, living inventory of what works |
-| 25 | `25_swarm_operating_playbook.md` | Profile-to-Kanban mappings, task dispatch templates (Lite/Full), orchestrator rules, EPIC lifecycle gates, SCSI Guardian protocol |
 
 ---
 
@@ -661,14 +660,6 @@ Must include:
 - Linked files and LL-NNN references
 - Rejection reasons when applicable
 
-### Swarm Operating Playbook (File 25)
-Must include:
-- Profile-to-responsibility matrix
-- Task dispatch templates (Lite/Full)
-- Orchestrator anti-temptation rules
-- EPIC lifecycle gates
-- Guardian protocol (SCSI integration)
-
 ### Project Stages (File 00)
 Must include:
 - **FILE INDEX** — complete table: #, filename, stage, purpose — same structure as this skill's tables
@@ -713,7 +704,6 @@ When creating this file for a new project, use this structure:
 | 22 | `22_admin_panel.md` | 6 ⚫ | Admin dashboard, moderation |
 | 23 | `23_support_operations.md` | 6 ⚫ | On-call, incident response |
 | 24 | `24_active_capabilities.md` | 6 ⚫ | Living inventory of what works |
-| 25 | `25_swarm_operating_playbook.md` | 6 ⚫ | Profiles, Kanban, EPIC gates |
 
 ## 🚦 Stage Status
 
@@ -896,7 +886,7 @@ Each file type has expected linked files. When creating a new file, these are th
 | Stage 3 files (07–08) | Each other + `00` |
 | Stage 4 files (09–18) | `09_prd.md` (hub) + `00` |
 | Stage 5 files (19–21) | `19_decision_log.md` (hub) + `00` |
-| Stage 6 files (22–25) | `25_swarm_operating_playbook.md` (hub) + `00` |
+| Stage 6 files (22–24) | `24_active_capabilities.md` (hub) + `00` |
 
 ### Updating the Header
 

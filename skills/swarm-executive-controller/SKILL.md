@@ -8,6 +8,10 @@ metadata:
     tags: [Swarm, MCP, Claude, Governance, Delegation, Flutter, Route-A, Route-B]
 ---
 
+> **SUPERSEDED 2026-08-10 — historical.** The role-matrix swarm is NOT the
+> current method; the repo-mailbox loop (skill `agent-repo-handoff-loop`) is.
+> Kept for reference only.
+
 # Swarm Executive Controller
 
 Operate as the Executive Controller over a 10-agent Flutter development swarm through an MCP Bridge to the Hermes Lead Architect. Covers the two-route decision tree: Route A (small tasks → direct execution) and Route B (EPICs → Lead Architect → Kanban → Swarm). Includes pre-flight Ultra verification protocol.
