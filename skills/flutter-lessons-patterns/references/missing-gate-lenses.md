@@ -73,33 +73,41 @@ grep -rn "catch" lib/features/*/presentation/*.dart --include="*.dart" | wc -l
 ```
 **Interpretation:** async operations without catch → unhandled exceptions. Cross-check with async call sites.
 
-### Lens 11 — Schema Migration Tests ⚠️ (HIGH-VALUE — often missing)
+### Lens 11 — Schema-Compat Fixture (Isar 3 has NO migration API — corrected 2026-08-11)
 ```bash
-find test -iname "*migrat*"
-grep -rn "Isar.open" lib/ --include="*.dart"
+grep -rn "migrat" ~/.pub-cache/hosted/pub.dev/isar-3.1.0+1/lib/ | head -3   # expect ZERO
+grep -n "static Future<Isar> open" ~/.pub-cache/hosted/pub.dev/isar-3.1.0+1/lib/src/isar.dart
 ```
-**Pass:** migration test exists AND Isar.open uses versioned schemas.
-**Fail (zero migration tests):** schema WILL change (fields added, types changed) — a live-user DB upgrade without a migration test = silent data loss. This is the most expensive class of missing gate.
+**⚠️ CORRECTION (auditor-verified):** this lens was originally written as "migration test on versioned schemas" — **Isar 3 has no such mechanism**: `Isar.open` takes no `version` parameter and the package has zero `migrat*` symbols. A "migration harness" would be a documented myth. Auto schema evolution is safe for add/remove field but **silently loses data on type change/rename** — with no callback to notice.
+**Pass:** a committed reference `.isar` fixture exists (captured at release schema-lock — impossible to reproduce "v1" after launch) AND a compat test opens it under the current schema.
+**Fail:** no fixture — migration (to Drift or Isar itself) would start blind with no description of the schema the user's data was written with.
+**Timing:** fixture capture is a **release-gate item at schema-lock**, not a pre-release task — after publishing, an original v1 can never be reproduced.
 
-### Lens 12 — UseCase Enforcement (clean architecture)
+### Lens 12 — Screens Must Not Read Repositories Directly (corrected 2026-08-11)
 ```bash
-echo "screens using ref.watch directly: $(grep -rln "ref.watch" lib/features/*/presentation/ | wc -l)"
-echo "screens using UseCase:            $(grep -rln "UseCase\|usecase" lib/features/*/presentation/ | wc -l)"
+# NOT the 19-vs-6 ref.watch ratio — that compares different populations
+# (ref.watch is the idiomatic Riverpod read; UseCase count measures nothing).
+# The real violation is screens bypassing the application layer entirely:
+grep -rn "RepositoryProvider\|\.repository\b" lib/features/*/presentation/*.dart | grep -v "// \|app_providers"
 ```
-**Interpretation:** if screens consume providers directly far more than UseCases, business logic lives in widgets → changing logic touches many screens (same pattern as missing component layer in Pattern 49, but for governance).
+**⚠️ CORRECTION (auditor-verified):** the original "19 ref.watch vs 6 UseCase" metric was **invalid** — `ref.watch` on feature providers (`activeVehicleProvider`, `maintenanceOutlookProvider`…) is exactly the correct Riverpod usage, and 9 of 10 features already have an `application/` layer. **The real, bounded, grep-able gate:** screens that read `repository`/`service` directly, bypassing the application layer. Known sites are finite (~8, e.g. edit_record_screen:142/313/314, record_detail_screen:435, add_service_record_screen:84, settings_screen:111, odometer_step_screen:129/135). One-line gate, countable, perfect for `test/structure/`.
+**Interpretation:** a screen owning the wiring (use-case providers defined INSIDE a view file) is both an architectural violation AND the reason those use cases have zero test coverage (they are not in the provider tree the tests override) — one fix closes both.
 
 ### Lens 13 — Domain-Layer Test Isolation
 ```bash
 echo "total test files: $(find test -name '*.dart' | wc -l)"
 find test -name "*.dart" | grep -iE "repositor|usecase|domain|service" | head -15
 ```
-**Interpretation:** business logic (transactions, calculations, validations) must be unit-tested in isolation, not only through widget tests. UI tests passing with broken logic = false confidence.
+**⚠️ CORRECTION (auditor-verified):** "55 files, thin coverage" was an impression, not a measurement. Count **by named use case**: `grep -rl "CreateVehicleUseCase" test/` etc. — two were at zero (`CreateVehicleUseCase`, `SetActiveVehicleUseCase`), five covered. **And name-counting can mislead both ways:** `CreateVehicleUseCase` had zero *class-name* references yet its behavior IS covered through `setup_wizard_test` walking the wizard — the precise gap is the class's own unexercised branches. Beware similarly-named pairs (`SwitchActiveVehicleUseCase` tested, `SetActiveVehicleUseCase` not — two classes, adjacent behavior).
+**Interpretation:** business logic must be unit-tested in isolation; count named classes, then verify behavior coverage (a wizard walk may cover it).
 
-### Lens 14 — Secure-Storage Decision (documented, not assumed)
+### Lens 14 — Documented Security Rules Need a Gate, Not a Decision (corrected 2026-08-11)
 ```bash
+grep -rn "Must not store" app-spec/13_security_privacy.md   # the decision EXISTS
 grep -rn "secure_storage\|flutter_secure\|encrypt" pubspec.yaml lib/ 2>/dev/null
 ```
-**Interpretation:** for local-first apps, "no secure storage" may be correct (DEC-001) — but it must be a DOCUMENTED decision, not an accident. If any token/credential enters the app later, a gate must exist to route it to secure storage.
+**⚠️ CORRECTION (auditor-verified):** the original claim "no documented decision" was **wrong** — `13 §5.1` explicitly forbids raw VIN/auth/payment tokens/API keys, and §14 names encryption a non-goal. **The real gap is narrower:** a documented rule with **no automated gate** — nothing fails the build if a token field appears. One-line grep gate (`Must not store` → enforcement test in `test/structure/`).
+**Methodological lesson (this lens's own failure):** concluding "undecided" by grepping code without reading the spec that decides it — for a governance-heavy project this is a structural blind spot of the lens set.
 
 ---
 
@@ -123,3 +131,15 @@ grep -rn "secure_storage\|flutter_secure\|encrypt" pubspec.yaml lib/ 2>/dev/null
 | 14 **secure-storage decision** | **no secure_storage, no documented decision** | ❌ **UNDOCUMENTED** |
 
 **Bottom line:** 4 real gaps invisible to memory, found by running commands. This is the proof that lenses > recall.
+
+---
+
+## ⚠️ Post-Audit Correction — the lens set itself was audited (2026-08-11)
+
+The external auditor re-produced every lens command on the live repo and found **3 of the 14 lenses were wrong** (Lens 11: migration API that doesn't exist; Lens 12: metric comparing different populations; Lens 14: concluded "undocumented" without reading the spec). **The corrected lenses above carry the corrections inline.**
+
+**The meta-lesson — a wrong lens is worse than no lens:** a wrong lens produces a false result on every run, in every project, forever — costing time and credibility. Before trusting a lens result, verify the lens measures what it claims:
+1. **Verify the API exists** before writing a lens around it (Lens 11: `Isar.open` has no version param).
+2. **Verify the metric measures the claim** (Lens 12: ref.watch count vs business-logic-in-widgets are different populations).
+3. **Read the spec before concluding "undocumented"** (Lens 14: the decision existed in 13 §5.1 — the gap was the missing gate, not the missing decision).
+4. **A lens that produces a false positive poisons every downstream decision** — a scan catches what review repeats; a wrong scan repeats wrongness.
