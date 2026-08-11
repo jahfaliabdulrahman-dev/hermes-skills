@@ -1,8 +1,8 @@
 ---
 name: specification-writing
-description: Write and maintain product specification files following the AI-Agent App Build Specification Pack framework. Covers the 24-file, 6-stage sequential structure (00–24), mandatory file header template with Cross-Reference traceability, depth requirements, and the NO PROCEDURAL REDUCTION rule. Use when creating or updating any app-spec file, writing PRDs, design systems, user flows, monetization specs, risk registers, financial models.
-tags: [specification, prd, product-discovery, design-system, user-flows, monetization, risks, financial-model, documentation, zero-trust]
-version: "3.4.0"
+description: Write and maintain product specification files following the AI-Agent App Build Specification Pack framework. Covers the 24-file, 6-stage sequential structure (00–24), mandatory file header template with Cross-Reference traceability, depth requirements (incl. dependency-health rule for library adoption decisions), and the NO PROCEDURAL REDUCTION rule. Use when creating or updating any app-spec file, writing PRDs, design systems, user flows, monetization specs, risk registers, financial models.
+tags: [specification, prd, product-discovery, design-system, user-flows, monetization, risks, financial-model, documentation, zero-trust, dependency-health]
+version: "3.6.0"
 ---
 
 # Specification Writing
@@ -659,6 +659,8 @@ Must include:
 - Rationale with trade-offs considered
 - Linked files and LL-NNN references
 - Rejection reasons when applicable
+
+**Dependency-health rule for every persistence/DB/library adoption decision (2026-08-11, from the Isar→Drift evaluation):** before adopting or keeping a third-party data library, record in the DEC the measured health facts: last publish date + last repo commit (dormancy), active maintenance cadence, official testing documentation (in-memory test setup), reactive/transaction/migration capabilities vs the project's actual needs, and the migration cost if the library dies. A library that is dormant (no release for years) is a *conscious, recorded* risk — never an accident. The decision to STAY is as much a decision as the decision to SWITCH: both get a DEC with measured numbers, and a deferred decision is recorded as a strategic CARRY with a trigger (e.g. "re-evaluate after MVP"). General rule: the choice is between the current library and the best reactive/type-safe maintained alternative — not a three-way tie with thin raw-SQL wrappers for data-heavy apps.
 
 ### Project Stages (File 00)
 Must include:
