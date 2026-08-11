@@ -1,8 +1,8 @@
 ---
 name: specification-writing
-description: Write and maintain product specification files following the AI-Agent App Build Specification Pack framework. Covers the 24-file, 6-stage sequential structure (00–24), mandatory file header template with Cross-Reference traceability, depth requirements (incl. Design System 3-layer + Enforcement Levels GATE/RULE/JUDGMENT + Missing-Gate Lens Audit), and the NO PROCEDURAL REDUCTION rule. Use when creating or updating any app-spec file, writing PRDs, design systems, user flows, monetization specs, risk registers, financial models.
-tags: [specification, prd, product-discovery, design-system, user-flows, monetization, risks, financial-model, documentation, zero-trust, enforcement-levels, missing-gate-lenses]
-version: "3.5.0"
+description: Write and maintain product specification files following the AI-Agent App Build Specification Pack framework. Covers the 24-file, 6-stage sequential structure (00–24), mandatory file header template with Cross-Reference traceability, depth requirements, and the NO PROCEDURAL REDUCTION rule. Use when creating or updating any app-spec file, writing PRDs, design systems, user flows, monetization specs, risk registers, financial models.
+tags: [specification, prd, product-discovery, design-system, user-flows, monetization, risks, financial-model, documentation, zero-trust]
+version: "3.4.0"
 ---
 
 # Specification Writing
@@ -300,70 +300,6 @@ Cross-reference:
 - `flutter-hook-architect` skill — the authoritative implementation reference
 - `hook-veto-protocol` skill — security chain origin
 - `19_decision_log.md` — DEC entries for hook-related decisions
-
-### Design System Architecture — Depth Requirement (File 12) + Enforcement Levels
-
-> **Effective:** 2026-08-11
-> **Source:** `flutter-lessons-patterns` (Patterns 49-50, LL-052/053) + RFC 2119
-> **Governance Rule:** Every Flutter project MUST document its design system in THREE layers and classify EVERY architecture pattern by enforcement level.
-
-**Three-layer design system (each layer has a different enforcement level):**
-
-| Layer | What it is | Enforcement |
-|---|---|---|
-| **1. Design tokens** | ONE file builds `ColorScheme`/`ThemeData` from explicit hex table (NO `ColorScheme.fromSeed`); ALL screens consume via `Theme.of(context)` — no hardcoded `Color(0x...)` literals anywhere else | **🚪 GATE** — contract test: (1) bans `fromSeed` across `lib/`, (2) scans every `scheme.<role>` used and asserts it is explicitly defined, (3) pins hex + fonts literally |
-| **2. ThemeData sub-themes** | `cardTheme`, `appBarTheme`, `textButtonTheme`, `chipTheme` define shape/elevation/typography ONCE | **📏 RULE** — any widget-style attribute repeated in 2+ files belongs in a sub-theme |
-| **3. Component wrapper layer** | `AppButton`/`AppCard` wrappers protecting against full UI-kit swaps | **🧭 JUDGMENT** — project decision by ambition (long-lived → build from day one; small/throwaway → skip) |
-
-**Enforcement levels (GATE/RULE/JUDGMENT + RFC 2119 negation):** every architecture pattern in File 12 MUST be classified:
-1. **🚪 GATE** — machine-enforced: lint/test/script fails the build if violated. Universal + costly to retrofit. RFC 2119: **MUST** / **MUST NOT**.
-2. **📏 RULE** — documented convention enforced by review. Universal but not machine-detectable (or gate cost > debt saved). RFC 2119: **SHOULD** / **SHOULD NOT**.
-3. **🧭 JUDGMENT** — project decision: skill gives criteria, answer depends on context. RFC 2119: **MAY** (no negation axis).
-
-**Classification criteria (adopted 2026-08-11):** Filter 1 — universal? (no → JUDGMENT). Filter 2 — machine-detectable? (no → RULE). Then weighted score for GATE vs RULE: retrofit cost 0.4 · failure severity 0.3 · gate cost inverse 0.2 · false-positive inverse 0.1; ≥0.6 → GATE. Source anchor: originating project already runs the automated check → that wins. Gray zone (0.55–0.65) defaults to RULE unless a live check exists.
-
-**UI/theme package adoption — decision framework (write a DEC):** ① RTL tested in practice (FIRST filter — most fluttergems UI libs are LTR-only) ② no native code ③ pub.dev floor (score, recency, issues) ④ state-management compatibility (Riverpod/Bloc). Android reality: `compileSdk`/`targetSdk` come from Flutter/AGP — Google Play mandates are solved by Flutter upgrades, NOT theme-package upgrades.
-
-**Verification Gate:**
-- [ ] Design tokens in ONE file; `ColorScheme.fromSeed` banned by contract test (CARRY-3 pattern)
-- [ ] Zero hardcoded `Color(0x...)` outside the token file (grep-able)
-- [ ] Sub-themes defined for at least card/appBar/textButton; no per-file `elevation: 0` + `RoundedRectangleBorder` duplication
-- [ ] Component wrapper layer decision recorded (build / skip + why) — not assumed
-- [ ] Every File 12 pattern carries a GATE/RULE/JUDGMENT label + RFC 2119 keyword (MUST/MUST NOT/SHOULD/SHOULD NOT/MAY)
-
-Cross-reference:
-- `flutter-lessons-patterns` skill — Pattern 49 (three-layer design system), Pattern 50 (missing-gate lenses), classification criteria
-- `flutter-design-anti-patterns` skill — hardcoded-color lint (`hardcoded_color.dart`) enforces the token gate
-- `19_decision_log.md` — DEC for UI-package adoption criteria (record before adopting any external theme/UI kit)
-
-### Missing-Gate Detection — Milestone Lens Audit (File 14 / File 20)
-
-> **Effective:** 2026-08-11
-> **Source:** `flutter-lessons-patterns` Pattern 50 (LL-053) + `references/missing-gate-lenses.md`
-> **Governance Rule:** Before every EPIC close / release candidate, RUN the 14-lens catalog (`flutter-lessons-patterns` → `references/missing-gate-lenses.md`) — do NOT recall gates from memory. Unknown-unknown gates surface by running checklists from other projects, not by thinking.
-
-**Why:** a 14-lens audit of a mature codebase found 4 real gaps in 3 minutes while all KNOWN gates passed: no Isar migration test · UseCase boundary not enforced (19 screens `ref.watch` vs 6 UseCase) · domain logic thinly unit-tested · no documented secure-storage decision. Lenses convert "what could be wrong?" into "run this command, read this result."
-
-**Highest-value lenses (full catalog in the reference):**
-```bash
-# Lens 11 — schema migration tests (often missing; silent data loss on live upgrade):
-find test -iname "*migrat*"                     # 0 = migration untested → GAP
-# Lens 12 — UseCase boundary (business logic in widgets = change touches many screens):
-grep -rln "ref.watch" lib/features/*/presentation/ | wc -l
-grep -rln "UseCase" lib/features/*/presentation/ | wc -l
-# Lens 14 — documented secure-storage decision (local-first may be right — but DOCUMENT it):
-grep -rn "secure_storage\|flutter_secure" pubspec.yaml lib/ 2>/dev/null   # 0 + no DEC = GAP
-```
-
-**Verification Gate:**
-- [ ] Lens catalog run before EPIC close / release candidate (evidence: lens output attached to the gate report)
-- [ ] Any lens finding a gap → the gap is either fixed, converted to a tracked CARRY, or explicitly judged out-of-scope with reason (no silent skip)
-- [ ] New lens discovered in ANY project → added back to the shared catalog (LL-045)
-
-Cross-reference:
-- `flutter-lessons-patterns` skill → `references/missing-gate-lenses.md` (the 14-lens catalog with commands + interpretation)
-- `14_testing_acceptance.md` — migration tests belong in the test pyramid
-- `17_data_architecture_acid.md` — Isar schema versioning + migration strategy lives here
 | 13 | `13_security_privacy.md` | Auth strategy, data sensitivity classification, permissions, encryption, threat model |
 | 14 | `14_testing_acceptance.md` | Test pyramid, DoD, acceptance criteria, device targets |
 | 15 | `15_devops_release.md` | CI/CD pipelines, environments, signing, release checklist, observability |
