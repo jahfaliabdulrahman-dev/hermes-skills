@@ -1,7 +1,7 @@
 ---
 name: flutter-lessons-patterns
-description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 49 programming patterns. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
-version: 2.17.0
+description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 49 programming patterns, each classified GATE/RULE/JUDGMENT. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
+version: 2.18.0
 triggers:
   - Starting any Flutter implementation task
   - Creating a new BL (backlog item) or Kanban card
@@ -28,12 +28,20 @@ related_skills:
 # Flutter Cross-Project Patterns — Unified Programming Lessons
 
 > **Sources:** CarSah (LL-001–LL-020) + Hermex_Android (LL-001–LL-042)
-> **Patterns: 40** (1–8: CarSah core, 9–12: Android build, 13–17: Hermex core, 18–28: Hermex extended, 29–30: Hermex HERMEX-007, 31: Swarm governance, 32: Hermex meta-pattern, 33: Azdal stored-first-decision, 34: Azdal reactive-service, 35: Azdal compute-locally, 36: Azdal ephemeral-message-lifecycle, 37: Azdal LLM-no-actionable-UI, 38: Android-Tecno-INTERNET, 39: Azdal widget-answered-once, 40: Azdal full-rewrite-callback-verification)
+> **Patterns: 49** (1–8: CarSah core, 9–12: Android build, 13–17: Hermex core, 18–28: Hermex extended, 29–30: Hermex HERMEX-007, 31: Swarm governance, 32: Hermex meta-pattern, 33: Azdal stored-first-decision, 34: Azdal reactive-service, 35: Azdal compute-locally, 36: Azdal ephemeral-message-lifecycle, 37: Azdal LLM-no-actionable-UI, 38: Android-Tecno-INTERNET, 39: Azdal widget-answered-once, 40: Azdal full-rewrite-callback-verification, 41-44: Hermex RC6, 45: Hermex shared-file, 46-48: Azdal Stage 4, 49: CarSah design-system)
 > **Purpose:** This is the SINGLE source of truth for ALL Flutter/Dart/Android programming lessons. Load before every implementation task. Governance/process lessons belong in `~/.hermes/swarm/00_governance_lessons.md`.
+>
+> **Enforcement levels (adopted 2026-08-11 — founder decision):** every pattern is classified by two exclusion filters then a weighted score:
+> 1. **🚪 GATE** — machine-enforced: a lint/test/script fails the build if violated. Universal truth + costly to retrofit.
+> 2. **📏 RULE** — documented convention enforced by review. Universal truth but not machine-detectable (or gate cost > debt saved).
+> 3. **🧭 JUDGMENT** — project decision: the skill gives criteria, the answer depends on project context (size, ambition, team structure).
+> Classification criteria: Filter 1 — universal? (no → JUDGMENT). Filter 2 — machine-detectable? (no → RULE). Then weighted score for GATE vs RULE: retrofit cost 0.4 · failure severity 0.3 · gate cost inverse 0.2 · false-positive inverse 0.1; ≥0.6 → GATE. Source anchor: if the originating project already runs an automated check, that wins. Gray zone (0.55–0.65) defaults to RULE unless a live automated check exists. **Index:** 🚪 GATE = Patterns 3, 9, 10, 12, 14, 18, 19, 24, 38, 41, 42 · 📏 RULE = the rest · 🧭 JUDGMENT = Patterns 8, 30.
 
 ---
 
 ## Pattern 1 — Provider Invalidation Rule (LL-003)
+**Level:** 📏 RULE — Provider hygiene — no lint exists; review catches it
+
 
 **Rule:** Every data mutation (create, update, delete) MUST call `ref.invalidate()` on EVERY provider that holds stale data after the mutation.
 
@@ -66,6 +74,8 @@ ref.invalidate(dashboardStatsProvider);
 </details>
 
 ## Pattern 2 — Device Verification Gate (LL-002 + LL-013)
+**Level:** 📏 RULE — Device verification — requires a human/physical device; can't be automated
+
 
 **Rule:** CI green ≠ working. Every BL/feature requires:
 1. Cross-tab device testing (not single-tab)
@@ -115,6 +125,8 @@ verification:
 </details>
 
 ## Pattern 3 — Zero Hardcoded Strings (LL-001 + LL-006 + LL-018)
+**Level:** 🚪 GATE — lint hardcoded_color exists (flutter-design-anti-patterns); retrofit costly
+
 
 **Rule:** No user-facing string anywhere — not in widgets, not in use cases, not in validators, not in domain/data layers. ALL strings via `AppLocalizations`.
 
@@ -176,6 +188,8 @@ validator: (value) => value.isEmpty ? AppLocalizations.of(context)!.odometerRequ
 </details>
 
 ## Pattern 4 — Save-Gating Validators (LL-005 + LL-017)
+**Level:** 📏 RULE — Validator gating — widget tests can cover but no standing gate
+
 
 **Rule:** Required fields must disable the Save button when invalid. Data integrity decisions MUST list every affected field explicitly — never reference a "pipeline" without enumerating fields.
 
@@ -220,6 +234,8 @@ validator: (value) => value.isEmpty ? AppLocalizations.of(context)!.odometerRequ
 </details>
 
 ## Pattern 5 — Tests in Same PR (LL-007)
+**Level:** 📏 RULE — PR hygiene — process rule, review-enforced
+
 
 **Rule:** No "tests in a follow-up PR." UI changes, i18n changes, and new validators MUST include tests in the SAME PR.
 
@@ -247,6 +263,8 @@ validator: (value) => value.isEmpty ? AppLocalizations.of(context)!.odometerRequ
 </details>
 
 ## Pattern 6 — Spec Sync Gate (LL-008)
+**Level:** 📏 RULE — Spec sync — manual docs flow, no machine check
+
 
 **Rule:** No stage closes until spec sync PR is merged. Lessons from implementation MUST flow back to app-spec files before the stage is considered complete.
 
@@ -267,6 +285,8 @@ validator: (value) => value.isEmpty ? AppLocalizations.of(context)!.odometerRequ
 </details>
 
 ## Pattern 7 — Design Before Implementation (LL-016 + LL-019)
+**Level:** 📏 RULE — Design before implementation — no tool can detect
+
 
 **Rule:** Complex UI decisions (changing screen structure, audience, or data integrity) REQUIRE:
 1. Designer-produced mockup BEFORE implementation card opens
@@ -306,6 +326,8 @@ validator: (value) => value.isEmpty ? AppLocalizations.of(context)!.odometerRequ
 </details>
 
 ## Pattern 8 — 1-Day BL Maximum (LL-020)
+**Level:** 🧭 JUDGMENT — BL size depends on team speed/project complexity — not universal
+
 
 **Rule:** Every backlog item must be completable in ≤1 working day. BLs exceeding 1 day must be split. Any BL running >1 day is auto-blocked for architect review.
 
@@ -333,6 +355,8 @@ validator: (value) => value.isEmpty ? AppLocalizations.of(context)!.odometerRequ
 </details>
 
 ## Pattern 9 — Android Namespace = MainActivity Package (LL-024)
+**Level:** 🚪 GATE — android-preflight.sh exists and runs (LL-024 enforcement); crash = max severity
+
 
 **Source:** hermex_android (2026-07-06) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -367,6 +391,8 @@ PKG=$(grep -oP '^package\s+\K\S+' android/app/src/main/kotlin/**/MainActivity.kt
 </details>
 
 ## Pattern 10 — Isar + ProGuard = Crash (LL-025)
+**Level:** 🚪 GATE — android-preflight.sh verifies isMinifyEnabled (LL-025); crash = max severity
+
 
 **Source:** hermex_android (2026-07-06) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -402,6 +428,8 @@ release {
 </details>
 
 ## Pattern 11 — Official Android Sources Mandatory (LL-026)
+**Level:** 📏 RULE — Skill-loading discipline — no automated check for a practice
+
 
 **Source:** hermex_android (2026-07-06) — MoA-audited 2026-07-06 → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -470,6 +498,8 @@ release {
 </details>
 
 ## Pattern 12 — Design Quality Anti-Patterns (LL-027 — Cross-Reference)
+**Level:** 🚪 GATE — detect.dart.py script exists (P0 severity scan)
+
 
 **Source:** Impeccable-inspired gap analysis (2026-07-11)
 
@@ -500,6 +530,8 @@ release {
 </details>
 
 ## Pattern 13 — State Mutation Order: Snapshot BEFORE Mutating (LL-029)
+**Level:** 📏 RULE — State mutation order — no lint; unit test can cover but no standing gate
+
 
 **Source:** hermex_android (2026-07-06) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -540,6 +572,8 @@ state = state.copyWith(messages: [...state.messages, userMsg]);
 </details>
 
 ## Pattern 14 — Silent API Key Redaction: `***` Literal (LL-022)
+**Level:** 🚪 GATE — grep rule in CI (GOV-005); max severity — every API call fails silently
+
 
 **Source:** hermex_android (2026-07-07) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -570,6 +604,8 @@ grep -rn 'api_key: \*\*\*' lib/ || true
 </details>
 
 ## Pattern 15 — Fake Connection State: Never Set 'connected' Without Health Check (LL-023)
+**Level:** 📏 RULE — Health-check discipline — no automated detector; security-adjacent but manual
+
 
 **Source:** hermex_android (2026-07-07) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -607,6 +643,8 @@ Future<void> selectServer(Server s) async {
 </details>
 
 ## Pattern 16 — API Query Parameters: Always Pass `include_disabled=true` (LL-042)
+**Level:** 📏 RULE — Verify API params with curl — behavioral rule, no gate
+
 
 **Source:** hermex_android (2026-07-12) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -641,6 +679,8 @@ final response = await _dio.get('/api/jobs', queryParameters: {'include_disabled
 </details>
 
 ## Pattern 17 — Verify On Disk Before Claiming (Meta-Pattern — Sulaiman Session 2026-07-11)
+**Level:** 📏 RULE — Meta-pattern: verify on disk before claiming — human/agent behavior
+
 
 **Source:** 6 rounds of governance evaluation where claimed fixes did not exist on disk
 
@@ -661,6 +701,8 @@ ls -la ~/.hermes/swarm/processed_violations.json  # ← must exist
 ---
 
 ## Pattern 18 — ProviderScope in Widget Tests: Mirror main.dart Exactly (LL-018)
+**Level:** 🚪 GATE — Smoke test itself fails without ProviderScope — the test IS the gate
+
 
 **Source:** hermex_android (2026-07-06) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -700,6 +742,8 @@ testWidgets('App renders', (tester) async {
 </details>
 
 ## Pattern 19 — Empty Catch Blocks FORBIDDEN in Security Paths (LL-019)
+**Level:** 🚪 GATE — avoid_empty_catch lint available; max severity (MITM/security)
+
 
 **Source:** hermex_android (2026-07-06) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -740,6 +784,8 @@ try {
 </details>
 
 ## Pattern 20 — GoRouter: Static Routes BEFORE Parameterized (LL-005)
+**Level:** 📏 RULE — Route ordering — cheap to fix, low severity; no lint
+
 
 **Source:** hermex_android (2026-07-05) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -772,6 +818,8 @@ GoRoute(path: '/tasks/new', ...),    // never reached
 </details>
 
 ## Pattern 21 — Provider Hygiene: NotifierProvider vs NotifierProvider.autoDispose (LL-003)
+**Level:** 📏 RULE — Provider auto-dispose intent — no lint can judge intent
+
 
 **Source:** hermex_android (2026-07-05) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -820,6 +868,8 @@ final searchQueryProvider = NotifierProvider.autoDispose<SearchQueryNotifier, St
 </details>
 
 ## Pattern 22 — Repository Null-Safety: Accept Nullable Dependencies (LL-006)
+**Level:** 📏 RULE — Nullable repository pattern — design pattern, no gate
+
 
 **Source:** hermex_android (2026-07-05) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -857,6 +907,8 @@ class SkillsRepository {
 </details>
 
 ## Pattern 23 — isBusy Guard: Provider-Level Atomicity (LL-004)
+**Level:** 📏 RULE — isBusy guard — implementation pattern, no lint
+
 
 **Source:** hermex_android (2026-07-05) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -893,6 +945,8 @@ Future<void> sendMessage(String text) async {
 </details>
 
 ## Pattern 24 — Router Wiring Gate: Feature NOT Done Until Wired (LL-017)
+**Level:** 🚪 GATE — Router wiring verified by smoke-test-reaching-screen (LL-017 mandate); 37.5% dead code
+
 
 **Source:** hermex_android (2026-07-06) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -926,6 +980,8 @@ Future<void> sendMessage(String text) async {
 </details>
 
 ## Pattern 25 — Provider Invalidation: Widget Layer, Not Provider Internals (LL-007)
+**Level:** 📏 RULE — Invalidation ownership — no lint
+
 
 **Source:** hermex_android (2026-07-05) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -950,6 +1006,8 @@ Future<void> sendMessage(String text) async {
 </details>
 
 ## Pattern 26 — SSE Parser: Custom Format Handling (LL-002 + HERMEX-007)
+**Level:** 📏 RULE — Verify actual SSE format with curl — behavioral
+
 
 **Source:** hermex_android (2026-07-05, 2026-07-12) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -999,6 +1057,8 @@ Future<void> sendMessage(String text) async {
 </details>
 
 ## Pattern 27 — Branch Hygiene: Verify Baseline Before Starting Work (LL-033)
+**Level:** 📏 RULE — Branch hygiene — work-start behavior, no gate
+
 
 **Source:** hermex_android (2026-07-11) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -1034,6 +1094,8 @@ flutter analyze                 # Establish true analyze baseline
 </details>
 
 ## Pattern 28 — [DUPLICATE — See Pattern 13] SSE Duplicate Message Prevention: Snapshot BEFORE Streaming (LL-029 — Extended)
+**Level:** 📏 RULE — Duplicate of Pattern 13 — inherits RULE
+
 
 > ⚠️ **This pattern is a duplicate of Pattern 13** ("State Mutation Order: Snapshot BEFORE Mutating"). Both cover the same rule: take a snapshot/read derived state BEFORE mutating source state. Pattern 13 is the canonical reference. This section is retained only for the SSE-specific 4-step sequence example.
 
@@ -1075,6 +1137,8 @@ await _repo.streamChat(history, userMsg);
 </details>
 
 ## Pattern 29 — API Response Key Format: Use `data`, Not `messages` (LL-041)
+**Level:** 📏 RULE — Verify API response key with curl — behavioral
+
 
 **Source:** hermex_android (2026-07-12) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -1109,6 +1173,8 @@ Logger('ChatRepo').fine('Response keys: ${response.data?.keys}');
 </details>
 
 ## Pattern 30 — Build Responsibility: Lead Architect Coordinates, DevOps Builds (LL-044)
+**Level:** 🧭 JUDGMENT — Role separation depends on team structure — solo dev doesn't need it
+
 
 **Source:** hermex_android (2026-07-12) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -1144,6 +1210,8 @@ Logger('ChatRepo').fine('Response keys: ${response.data?.keys}');
 ---
 
 ## Pattern 31 — Lessons Flow to Shared Knowledge Base (LL-045)
+**Level:** 📏 RULE — Docs-flow gate — kanban can enforce but it's process
+
 
 **Source:** hermex_android (2026-07-12) → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
@@ -1190,6 +1258,8 @@ kanban_create \
 ---
 
 ## Pattern 32 — Impact Analysis Before Implementation (LL-046)
+**Level:** 📏 RULE — Impact analysis — mental discipline, no tool
+
 
 **Source:** hermex_android (2026-07-12)
 
@@ -1241,6 +1311,8 @@ state = state.copyWith(messages: [...state.messages, userMessage]);
 </details>
 
 ## Pattern 33 — Stored First Decision: Never Re-Call Non-Deterministic APIs (Azdal Bug 2)
+**Level:** 📏 RULE — Stored-first decision — no lint; test possible but no standing gate
+
 
 **Source:** Azdal (2026-07-12) — device-surfaced bug, not caught by any test suite
 
@@ -1303,6 +1375,8 @@ Future<void> _confirmTransaction() async {
 ---
 
 ## Pattern 34 — Riverpod Reactive Service: Bridge Platform SDK Callbacks to StateNotifier (Azdal Voice Refactor)
+**Level:** 📏 RULE — Reactive service pattern — design pattern
+
 
 **Source:** Azdal (2026-07-12) — VoiceService refactor from manual `setState()` to Riverpod-reactive
 
@@ -1413,6 +1487,8 @@ Future<void> _toggleVoice() async {
 ---
 
 ## Pattern 35 — Compute Derived Values Locally: Never Trust LLM Math (Azdal Compound Split)
+**Level:** 📏 RULE — Compute locally — no lint distinguishes LLM-derived values
+
 
 **Source:** Azdal (2026-07-12) — device-surfaced bug, compound_split_card showing "الإجمالي: 0 ريال"
 
@@ -1453,6 +1529,8 @@ final total = _splits.fold<int>(
 | HERMEX-007 lessons (LL-041 through LL-046) recorded by flutter-documentation-steward as the final kanban task of each EPIC — this file is the single source of truth for all cross-project Flutter lessons
 
 ## Pattern 36 — Ephemeral Message Lifecycle: Track Id, Remove, Replace (Azdal Chat)
+**Level:** 📏 RULE — Ephemeral message lifecycle — implementation pattern
+
 
 **Source:** Azdal (2026-07-12) — OCR processing bubble fix + undo button replacement
 
@@ -1495,6 +1573,8 @@ chatNotifier.addBotMessage('تم استخراج 3 بنود',   // 2. ADD final r
 ---
 
 ## Pattern 37 — LLM Must Not Emit Actionable UI: App Constructs UI From Verified Data (Azdal System Prompt Fix)
+**Level:** 📏 RULE — LLM prompt discipline — manual review
+
 
 **Source:** Azdal (2026-07-12) — bug where "confirm" failed with "classification not available" on real transaction messages, confirmed via device logcat
 
@@ -1563,6 +1643,8 @@ The system prompt actively pushed Gemini toward Path 1. Path 2 was the fallback 
 ---
 
 ## Pattern 38 — Android INTERNET Permission on Custom OEM ROMs (Azdal Tecno HiOS)
+**Level:** 🚪 GATE — AndroidManifest INTERNET permission — preflight/CI grep can verify; all network fails
+
 
 **Source:** Azdal (2026-07-12) — device-surfaced DNS failure on Tecno LJ7 (HiOS), confirmed via logcat
 
@@ -1595,6 +1677,8 @@ with hostname, errno = 7)
 ---
 
 ## Pattern 39 — Widget "Answered Once": Buttons Disabled After First Action (Azdal Widget Lifecycle)
+**Level:** 📏 RULE — Answered-once widget — widget-testable but no standing gate
+
 
 **Source:** Azdal (2026-07-12) — duplicate-actions bug: cancelled a compound_split_card, and "✅ تأكيد" was still tappable afterward
 
@@ -1704,6 +1788,8 @@ The highlighting logic (`isConfirmed ? _success : _cyan`) correctly shows which 
 ---
 
 ## Pattern 40 — Full-File Rewrite Callback Verification (Azdal Camera Regression)
+**Level:** 📏 RULE — Rewrite callback checklist — manual verification
+
 
 **Source:** Azdal (2026-07-13) — camera button grayed out after conversational redesign rewrite
 
@@ -1724,6 +1810,8 @@ The highlighting logic (`isConfirmed ? _success : _cyan`) correctly shows which 
 ---
 
 ## Pattern 41 — Error-Handling Architecture: validateStatus + interceptor + sanitizeError (LL-047)
+**Level:** 🚪 GATE — Integration test triggering every error class is mandated (LL-047); raw leakage = high
+
 
 **Source:** hermex_android (2026-07-16) — RC6 Comprehensive Remediation
 
@@ -1771,6 +1859,8 @@ try { ... } catch (e) {
 </details>
 
 ## Pattern 42 — Certificate Pinning Uniform Wiring: Single ApiClient Provider (LL-048)
+**Level:** 🚪 GATE — CI grep rule exists (LL-048); TLS pinning bypass = max severity
+
 
 **Source:** hermex_android (2026-07-16) — RC6 Comprehensive Remediation
 
@@ -1809,6 +1899,8 @@ grep -rn "ApiClient(" lib/ --include="*.dart" | grep -v "api_client_provider.dar
 </details>
 
 ## Pattern 43 — Reactive Profile Switching: Watch connectionProvider (LL-049)
+**Level:** 📏 RULE — Reactive watch — no lint
+
 
 **Source:** hermex_android (2026-07-16) — RC6 Comprehensive Remediation
 
@@ -1854,6 +1946,8 @@ ChatState build() {
 </details>
 
 ## Pattern 44 — Gate Rescan Integrity: Re-test SPECIFIC Rejected Findings (LL-050 / ADR-012)
+**Level:** 📏 RULE — Gate rescan integrity — audit process, manual
+
 
 **Source:** hermex_android (2026-07-16) — RC6 Post-Mortem
 
@@ -1889,6 +1983,8 @@ ChatState build() {
 </details>
 
 ## Pattern 45 — Bundled-Task Pattern for Shared-File Conflicts (LL-051)
+**Level:** 📏 RULE — File-affinity analysis — helper script exists but decision stays with planner
+
 
 **Source:** hermex_android (2026-07-16) — RC6 Coordination
 
@@ -1932,6 +2028,8 @@ done
 ---
 
 ## Pattern 46 — Never Say "No Data": Cold Start Intelligence (LL-009)
+**Level:** 📏 RULE — Cold-start UX — design decision
+
 
 **Source:** Azdal (2026-05-16) → `~/Projects/Azdal/app-spec/00_lessons_learned.md`
 
@@ -1972,6 +2070,8 @@ return FinancialHealthCard(
 ---
 
 ## Pattern 47 — Live-Device Verification Supremacy (LL-010)
+**Level:** 📏 RULE — Live-device supremacy — requires physical device, can't automate (founder standard)
+
 
 **Source:** Azdal (2026-07-14) → `~/Projects/Azdal/app-spec/00_lessons_learned.md`
 
@@ -2012,6 +2112,8 @@ None were reachable by static analysis or unit tests. Every one found by: real d
 ---
 
 ## Pattern 48 — Regex Pre-Filter Gates + Disabled Button Colors (LL-011)
+**Level:** 📏 RULE — Regex fallback + disabled colors — behavioral, review catches
+
 
 **Source:** Azdal (2026-07-15) → `~/Projects/Azdal/app-spec/00_lessons_learned.md`
 
