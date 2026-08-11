@@ -1,7 +1,7 @@
 ---
 name: flutter-lessons-patterns
-description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 49 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY). Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
-version: 2.19.0
+description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 50 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
+version: 2.20.0
 triggers:
   - Starting any Flutter implementation task
   - Creating a new BL (backlog item) or Kanban card
@@ -2222,6 +2222,33 @@ static const _softAmber = Color(0xFFB08900);  // BAD — survives token swaps
 **Android policy reality check:** `compileSdk`/`minSdk`/`targetSdk` come from `flutter.compileSdkVersion` etc. — Google Play targetSdk mandates are solved by Flutter/AGP upgrades, NOT by theme-package upgrades. The real abandonment risk for a Dart package is being pinned to an old Flutter API — which is exactly what the Layer-1/3 separation contains (dead package = one-file swap, not a rewrite).
 
 **Verification:** before any theme/UI-kit adoption, walk a real RTL screen on-device (Arabic text, right-aligned layout, back navigation) — never assume "it should work."
+
+---
+
+## Pattern 50 — Missing-Gate Detection: Run Lenses, Not Memory (LL-053)
+
+**Source:** CarSah (2026-08-11) — founder question "what code-design gate are we blind to?" → 14-lens audit of a mature codebase found 4 real gaps in 3 minutes.
+
+**Rule:** You cannot think your way to unknown unknowns. Missing design gates surface when you RUN a known checklist ("lens") against the code — each lens is accumulated experience from other projects, and any unexpected result is a candidate missing gate. Before every EPIC close / release candidate, run the lens catalog (`references/missing-gate-lenses.md`), not your memory.
+
+```bash
+# Before milestone close — run the catalog, don't recall it:
+# Lens 11 (highest value — often missing):
+find test -iname "*migrat*"          # 0 results = schema migration untested = silent data loss risk
+# Lens 12 (governance leakage):
+grep -rln "ref.watch" lib/features/*/presentation/ | wc -l   # direct provider use in screens
+grep -rln "UseCase" lib/features/*/presentation/ | wc -l      # vs UseCase-mediated screens
+```
+
+**Why this is a meta-gate:** the audit found the codebase's KNOWN gates all passing (no debugPrint, no layer-boundary imports, no deprecated API) — yet 4 unknown gates were invisible to memory and surfaced instantly by running commands: **no Isar migration test · UseCase boundary not enforced (19 screens ref.watch vs 6 UseCase) · domain logic thinly unit-tested · no documented secure-storage decision.** Lenses convert "what could be wrong?" into "run this command, read this result."
+
+**How lenses are born (the answer to "how do we find what we don't know"):**
+1. **Harvest from other projects** — every project is a different failure lens (theme swap → Pattern 49; this audit → Pattern 50).
+2. **Import external standards** — OWASP MASVS, Google engineering practices, official Flutter/Isar docs, published post-mortems.
+3. **Capability Auditor** (SOUL.md) — continuously scan for new skills/extensions that could fill a gap.
+4. **When any project discovers a gap, ADD it to the lens catalog** (LL-045: lessons flow to the shared knowledge base).
+
+**Rule:** lenses live in the shared skill so EVERY project benefits. New lens discovered → add to `references/missing-gate-lenses.md` with trigger + exact command + interpretation.
 
 ---
 
