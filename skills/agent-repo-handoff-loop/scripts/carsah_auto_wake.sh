@@ -10,6 +10,10 @@
 # this script DEFERS entirely — the rotation will wake a fresh session which
 # processes any pending review itself (its directive carries the guard).
 #
+# INTENTIONAL-STOP GUARD (2026-08-11): if the founder stopped the implementer on
+# purpose, ~/.hermes/state/carsah_implementer_stopped exists and BOTH loop scripts
+# exit silently. The founder creates it when stopping, removes it when resuming.
+#
 # SESSION must be updated here whenever the implementer session rotates.
 
 SESSION=<your-implementer-session-id>
@@ -18,9 +22,13 @@ MARKER="$HOME/.hermes/state/carsah_last_seen_claude"
 DIRECTIVE="$HOME/.hermes/scripts/carsah_wake_directive.txt"
 LOG="$HOME/.hermes/state/carsah_wakes.log"
 LOCK="$HOME/.hermes/state/carsah_loop.lock"
+STOP_MARKER="$HOME/.hermes/state/carsah_implementer_stopped"
 THRESHOLD=900
 
 cd "$REPO" || exit 0
+
+# INTENTIONAL-STOP: founder stopped the implementer — never wake.
+[ -f "$STOP_MARKER" ] && exit 0
 
 # Mutual exclusion with the auto-rotate cron.
 [ -f "$LOCK" ] && exit 0
@@ -32,8 +40,8 @@ LATEST=$(git log -1 --format=%H origin/main -- handoff/claude/ handoff/STATE.md)
 [ -z "$LATEST" ] && exit 0
 [ "$LATEST" = "$(cat "$MARKER" 2>/dev/null)" ] && exit 0   # nothing new / already processed
 
-# Single-waker: if the implementer is already running, do nothing.
-pgrep -f "hermes chat --resume $SESSION" >/dev/null && exit 0
+# Single-waker: if ANY implementer session is already running, do nothing.
+pgrep -f "hermes chat --resume" >/dev/null && exit 0
 
 # ROTATION PRIORITY: a bloated session at a clean boundary is the rotate cron's
 # job — defer the wake; the fresh session will handle any pending review.

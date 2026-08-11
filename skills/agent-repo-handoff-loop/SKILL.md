@@ -187,6 +187,46 @@ the standard directive, logs `ROTATED`, and delivers one English line. The
 three-condition gate is what makes it safe: a mid-edit tree (dirty) blocks
 rotation, so a bloated session always finishes its current delivery first.
 
+**⚠️ AUTO-ROTATE IGNORES AN INTENTIONAL HOLD — it treats idle as
+ready-to-rotate (hit 2026-08-11, orphan sessions edited files mid-hold).**
+When the founder pauses the loop ("never wake him", deliberate hold), pausing
+ONLY the auto-wake cron is NOT enough: `carsah_auto_rotate.sh`'s third
+condition is "implementer idle" (`pgrep "hermes chat --resume $SESSION"`
+absent) — which is EXACTLY what an intentional hold looks like. The rotate
+cron keeps firing every 30m, creating fresh sessions, and waking them with the
+standard directive. Observed: founder paused auto-wake at 10:11; auto-rotate
+(never paused) spawned sessions `20260811_081149_c56247` and
+`20260811_101210_b2d9e2` at 08:12 and 10:12; one orphan (081149) ran the
+implementer directive and EDITED `test/features/settings/settings_screen_test.dart`
+(mid-hold!) before dying at max-turns — a change attributed to "the
+implementer" that no authorized session made. **Rules:**
+1. **Pause ALL THREE loop crons when holding — auto-wake AND auto-rotate AND
+   stuck-watchdog.** A hold is a full-loop pause; any cron left running that
+   can spawn or edit is a live unauthorized writer.
+2. **Before blaming "the implementer" for a file change, verify the WRITER.**
+   Check `stat -f "%Sm" <file>` (mtime), `sqlite3 ~/.hermes/state.db "SELECT
+   id, datetime(created_at/1000,'unixepoch','localtime') FROM sessions ORDER
+   BY created_at DESC LIMIT 5"` for new session ids, and
+   `grep -E "ROTATED|WOKE" ~/.hermes/state/carsah_wakes.log` — a file edited
+   while the founder believes the loop is stopped is an orphan-session edit,
+   not implementer work. Revert or quarantine it before building on it.
+3. The rotate script has a SECOND bug that makes the first worse: it
+   `sed`-updates `SESSION=` in the auto-wake script and the watcher but NEVER
+   its own copy (hit 2026-08-11: rotate script still had `091608` after
+   rotating to `171043`, so it counted messages on the retired session
+   `964 > 900` and rotated the SAME old session repeatedly, spawning a new
+   orphan every 30m). On every rotation/resume, sync `SESSION=` in ALL THREE
+   scripts (see the Manual resume section).
+4. **MECHANICAL guard beats human discipline (deployed 2026-08-11): add an
+   INTENTIONAL-STOP marker file** (`~/.hermes/state/carsah_implementer_stopped`)
+   that BOTH loop scripts check FIRST and exit silently if present. The
+   founder creates it when holding, removes it when resuming. Do not rely on
+   "remember to pause all three crons" — the marker makes the hold
+   self-enforcing even if a cron is left scheduled. Both scripts also check
+   `pgrep -f "hermes chat --resume"` (ANY implementer session, not
+   `$SESSION`) so a rotated session id can never fool the idle check. The
+   scripts in `scripts/` carry both guards — copy them, don't re-derive.
+
 Cadence matters too: if the loop is fast and the founder is not watching,
 lengthen the poll interval (2m → 10m) so each wake is meaningful and the
 mailbox has time to settle — cheaper and calmer, same correctness.
@@ -585,6 +625,30 @@ monitor hash, zero suppression:
   which processes any pending review itself (the standard directive carries
   the idempotency guard). Rotation wins at a boundary; wake wins mid-build.
 
+## Auditor-side automation — deterministic wake for the external auditor (2026-08-11)
+
+The implementer side has auto-wake + auto-rotate + watchdog, but the AUDITOR side was left manual (`/loop 3m` in an interactive Claude Code session). When the auditor's scheduler was deleted, the implementer delivered into a dead mailbox — **half-alive loop: implementer pushing, auditor never reading**. Symptom: `handoff/sulaiman/` advances while `handoff/claude/` never gains a new file and the implementer's wake never fires (its monitor watches the auditor mailbox).
+
+Make the auditor side as deterministic as the implementer side:
+
+1. **Auditor monitor script** (`scripts/carsah_auditor_monitor.sh`): mirrors the implementer-side monitor but watches the IMPLEMENTER's mailbox (`handoff/sulaiman/`) with the marker form against its OWN marker (`~/.<name>_last_seen_sulaiman`). Same shared-tree rule: `git log HEAD..origin/main` is always empty for a same-checkout auditor; the marker form is mandatory. Watch ONLY the implementer mailbox — never STATE.md (the auditor's own STATE updates would self-trigger its next poll).
+2. **Cron shape**: `every 3m`, `monitor_script=<auditor_monitor.sh>`, `enabled_toolsets=["terminal"]`, `workdir=<repo>`, `deliver=origin`. The monitor suppresses ticks while idle (zero tokens); on CHANGED the agent runs and invokes the auditor headless.
+3. **Headless invocation**: `claude -p "$(cat ~/.hermes/scripts/carsah_auditor_directive.txt)" --max-turns 100` — the full `/loop 3m` directive text (fetch → marker check → pull → read protocol+contract+STATE+newest message → review commits + CI → write verdict in handoff/claude/ → update STATE → push → update marker → gh run watch) works as a one-shot prompt. `claude -p` prints the reply and exits; verify a NEW file appeared in `handoff/claude/` after the run (`ls -t | head -3`).
+4. **The directive file** must be self-contained (idle detection included) — when the auditor says "idle", there is nothing to do; the wrapper agent should not invent work.
+5. **Re-arm verification**: after a hold/resume, `cronjob action=list` and confirm the auditor cron EXISTS (it can vanish silently, like the stuck watchdog did 2026-08-11). The full loop is FOUR crons: auto-wake (5m) + auto-rotate (30m) + stuck-watchdog (5m) + **auditor-loop (3m)**.
+
+Test headless Claude first: `claude -p "Reply with exactly: OK" --max-turns 1` → expect `OK` before wiring the cron (a broken OAuth/CLI would fail the whole loop).
+
+## STOP-28: when the implementer keeps failing, the founder can assign the fix to the auditor (2026-08-11)
+
+After five implementer attempts on one CI hang (BL-068/STOP-28 — a widget test that hung Linux CI for exactly 10 minutes), the founder assigned the fix to the AUDITOR (Claude) across the usual contract boundary. The auditor's commit said it plainly: "This crosses the auditor contract's 'do not write implementation code' boundary by explicit founder instruction; recorded rather than done quietly." The fix worked: the auditor removed Isar+runAsync from the test at the root, added a harness policy test that fails on any NEW nesting of the bad pattern, and **paid the debt file-by-file** (13 files → 8 → 0) with each file run and verified alone before moving on — a bulk sweep had dropped 6 tests, because "the waiting is not transferable: every screen waits for something different" (a filled field, a loading spinner vanishing, a delete button, a transient splash that any added delay corrupts). Then it wrote a full 9-section investigation (`docs/lessons/`) including its own three mistakes.
+
+Lessons for the loop:
+1. **The founder can temporarily reassign the implementer's STOP to the auditor** — but only by explicit founder instruction, and the commit must SAY the boundary was crossed on instruction (audit honesty beats quiet role-floating).
+2. **Debt repayment is file-by-file, not a sweep** — the sweep that "should work" dropped 6 tests because the waiting condition differs per screen. Run each file alone after fixing it; the guard's allowlist only shrinks.
+3. **The meta-failure: a wrong rule written as doctrine spreads perfectly.** The ambiguous skill wording ("runAsync plus pump()") was copied into 13 files (44 sites) and review approved it every time — review compares code against the rule, so a wrong rule is self-validating. **A scan catches what a review repeats** (it measures code, not belief). When a test passes on one machine and fails on another, stop fixing the symptom and find what DIFFERS between the machines (clock domain, speed, runner load) — five rounds were lost to not asking this.
+4. **When the implementer is on hold, the AUDITOR can still legally own a fix** — the hold is on the implementer, not on the loop. The founder-side coordinator can wake the auditor path instead.
+
 ## CARRY HOLD — a review that defers to the founder is a STOP-light (2026-08-10)
 
 When a review says a decision is deferred to the founder — "design gate stays
@@ -600,6 +664,42 @@ implementer cannot see the relay coming, but it CAN see the deferral signal in
 the review — that signal is the instruction to hold. Add to the directive:
 "if the review defers a decision to the founder, do NOT execute the related
 CARRY — remain AWAITING_FOUNDER until the founder rules."
+
+## Manual resume after a founder hold (2026-08-11)
+
+When the founder has explicitly paused the loop ("never wake him", hold on
+implementer) and later lifts it ("resume the build"), the resume is a manual
+rotation + re-arm — do NOT just unpause the wake cron and expect the old
+session to continue (it is over the message threshold and was deliberately
+stopped). Verified sequence (CarSah, founder lifted the hold at 01:58):
+
+1. Read the LATEST auditor letter first (`ls -t handoff/claude/ | head -1`)
+   — the resume directive is only correct if it names the real next step and
+   any standing carries (the auditor's letter is the source, never STATE).
+2. Clean the tree to a true delivery boundary: remove stray untracked junk
+   (e.g. `rm -rf scripts/__pycache__/`) so the rotation-condition check
+   (`git status --porcelain` empty) and the new session start clean.
+3. Create the fresh session with the lean 10-skill set (see rotation recipe
+   step 3) and capture `session_id` from the one-shot ack.
+4. **Update SESSION= in ALL THREE scripts — auto-wake, live watcher, AND
+   auto-rotate.** The rotate script's own `SESSION=` is the one everyone
+   forgets: `carsah_auto_rotate.sh` sed-updates the OTHER two scripts when it
+   fires but never ITSELF, so after any rotation it still points at the
+   retired session id — the next auto-rotation would count messages on a
+   dead session. On a manual resume, sync all three with one `sed -i ''`.
+5. Restart the watcher (kill ALL old `carsah_live.sh` processes, start one
+   fresh — stale watchers lie "idle" against the old id), then `git pull
+   --rebase` and launch the wake: `hermes chat --resume <NEWID> --reasoning
+   max -q "$(cat <directive-file>)" -Q --max-turns 500` in the background.
+6. **Verify the full cron set came back — the stuck watchdog can vanish
+   silently during a hold.** `cronjob action=list` showed the auto-wake job
+   PAUSED (founder paused it to stop the loop) AND the `carsah-stuck-watchdog`
+   job GONE entirely (script still on disk, cron entry missing). Resume
+   auto-wake, recreate the watchdog with the same shape (`no_agent=true`,
+   `script=carsah_stuck_watchdog.sh`, `every 5m`, `deliver=origin`).
+7. Log the manual wake in the wakes log + one English line to the founder.
+
+The founder's "resume" is a full system re-arm, not a single unpause.
 
 ## Pitfalls (all hit in the field)
 
@@ -627,6 +727,8 @@ CARRY — remain AWAITING_FOUNDER until the founder rules."
 | Coordinator cron shows `enabled: false / state: paused` right after you updated it | `cronjob action=update` returned the job paused (paused_at = update moment, hit 2026-08-09) — a paused coordinator is a silent loop death | Always read the update response's `enabled` field; call `cronjob action=resume` if paused; verify `next_run_at` is in the future |
 | Watcher dashboard says "⚪ idle" while the implementer is clearly working | A STALE watcher process from an earlier rotation still has the old SESSION id in memory — its `pgrep -f "<old id>"` never matches the new session (hit 2026-08-09: duplicate `carsah_live.sh` processes, old one lying "idle" for hours) | On every rotation: kill ALL old watcher processes (`process(action=kill)` per session id from `process(action=list)`), patch `SESSION=` in the script, start ONE fresh watcher |
 | Founder alarmed: "implementer is running `flutter pub outdated` mid-build — violating the dependency policy" | It is not — `Try \`flutter pub outdated\` for more information.` is Flutter's STANDARD analyzer/test boilerplate footer (printed with unused-import and dependency warnings), not a command the agent ran | Before flagging a policy violation from tool output, check the actual tool_name + whether a `pub outdated`/`pub upgrade` command was executed; the footer line alone is noise |
+| After a rotation/resume, the NEXT auto-rotation fires on the WRONG session (counts messages of a retired id) | `carsah_auto_rotate.sh` sed-updates `SESSION=` in the auto-wake script and the watcher but never its OWN copy — so its internal id stays on the previous session forever (hit 2026-08-11: rotate script still had `091608` while the other two pointed at `171043`/`015808`) | On every rotation AND every manual resume, update `SESSION=` in ALL THREE scripts (auto-wake, live watcher, auto-rotate). One `sed -i ''` per file; verify with `grep "^SESSION"` across all three |
+| Founder resumes the loop but the stuck watchdog never alerts again | The watchdog CRON entry disappeared during the hold — the founder paused the loop (auto-wake paused), and the `carsah-stuck-watchdog` job was gone from `cronjob list` while the script still existed on disk (hit 2026-08-11) | After any hold/resume, `cronjob action=list` and verify ALL loop crons exist and are enabled: auto-wake (5m), auto-rotate (30m), stuck-watchdog (5m). Recreate missing ones with the documented shape (`no_agent=true`, `script=...`, `deliver=origin`) |
 
 ## Deployment checklist
 
@@ -654,6 +756,10 @@ CARRY — remain AWAITING_FOUNDER until the founder rules."
   DETERMINISTIC COORDINATOR section). Update SESSION= on every rotation.
 - `references/carsah-deployment.md` — full worked deployment: prompts, state
   machine, Telegram target, wake phrase, /loop command for the auditor.
+- `references/carsah-live-config.md` — **the CURRENT, verified live configuration
+  (2026-08-11): the four protected cron jobs, the auditor's /loop 3m directive
+  (full text), the four markers, proven failure modes, and the rule: do not create
+  new crons for the loop.** Read this before touching anything in the loop.
 - `references/subscription-implementer-alternatives.md` — the general class of
   flat-subscription implementers (CLI requirement + five conditions + the
   economics) with Kimi Code CLI as the verified case study + the one-step
