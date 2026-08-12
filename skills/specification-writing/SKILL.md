@@ -2,7 +2,7 @@
 name: specification-writing
 description: Write and maintain product specification files following the AI-Agent App Build Specification Pack framework. Covers the 24-file, 6-stage sequential structure (00–24), mandatory file header template with Cross-Reference traceability, depth requirements (incl. dependency-health rule for library adoption decisions), and the NO PROCEDURAL REDUCTION rule. Use when creating or updating any app-spec file, writing PRDs, design systems, user flows, monetization specs, risk registers, financial models.
 tags: [specification, prd, product-discovery, design-system, user-flows, monetization, risks, financial-model, documentation, zero-trust, dependency-health]
-version: "3.6.0"
+version: "3.7.0"
 ---
 
 # Specification Writing
@@ -321,7 +321,7 @@ Cross-reference:
 |---|------|---------|
 | 22 | `22_admin_panel.md` | Admin dashboard, moderation tools, analytics views, role-based access |
 | 23 | `23_support_operations.md` | On-call procedures, incident response, escalation paths, FAQ maintenance |
-| 24 | `24_active_capabilities.md` | Current feature status — the accurate, living inventory of what works |
+| 24 | `24_active_capabilities.md` | Current feature status — the accurate, living inventory of what works. **MUST include a plain-language App Completeness Checklist (§7): 20 yes/no questions a non-technical person answers by opening the app — navigation bar present, screens reachable, honesty rules visible. Checked before any release gate and after every 10 build steps (lesson 2026-08-12: 38 steps passed while the prototype-designed 3-tab navigation was never built — long spec files hide absences; a short checklist catches what long files hide).** |
 
 ---
 
@@ -660,7 +660,9 @@ Must include:
 - Linked files and LL-NNN references
 - Rejection reasons when applicable
 
-**Dependency-health rule for every persistence/DB/library adoption decision (2026-08-11, from the Isar→Drift evaluation):** before adopting or keeping a third-party data library, record in the DEC the measured health facts: last publish date + last repo commit (dormancy), active maintenance cadence, official testing documentation (in-memory test setup), reactive/transaction/migration capabilities vs the project's actual needs, and the migration cost if the library dies. A library that is dormant (no release for years) is a *conscious, recorded* risk — never an accident. The decision to STAY is as much a decision as the decision to SWITCH: both get a DEC with measured numbers, and a deferred decision is recorded as a strategic CARRY with a trigger (e.g. "re-evaluate after MVP"). General rule: the choice is between the current library and the best reactive/type-safe maintained alternative — not a three-way tie with thin raw-SQL wrappers for data-heavy apps.
+**Dependency-health rule for every persistence/DB/library adoption decision (2026-08-11, from the Isar→Drift evaluation):** before adopting or keeping a third-party data library, record in the DEC the measured health facts: last publish date + last repo commit (dormancy), active maintenance cadence, official testing documentation (in-memory test setup), reactive/transaction/migration capabilities vs the project's actual needs, and the migration cost if the library dies. A library that is dormant (no release for years) is a *conscious, recorded* risk — never an accident. The decision to STAY is as much a decision as the decision to SWITCH: both get a DEC with measured numbers, and a deferred decision is recorded as a strategic CARRY.
+
+**A deferred decision needs a MEASURABLE trigger, not an event (corrected 2026-08-11, auditor-verified on the Isar→Drift DEC):** "re-evaluate after MVP" / "at release" / "when we have time" is an EVENT — loose triggers become permanent by staleness (the review never gets scheduled, the CARRY drifts to "forever"). The trigger must be a TECHNICAL CONDITION that fires deterministically when the risk materializes. Verified example: `isar_generator` constrains `analyzer: ">=4.6.0 <6.0.0"` — so the correct trigger is "the first SDK-upgrade step where `isar_generator` resolution fails", not "after MVP". When writing a deferred-decision trigger, ask: *what measurable failure forces this decision?* — that failure is the trigger. Also record preconditions that must NOT wait for the trigger (e.g. a reference DB fixture must be captured at schema-lock because after launch an original v1 can never be reproduced) and turn protective clauses ("no new features of library X") into enforceable rows (a scanner against a committed baseline) — rows stay, sentences drift. General rule: the choice is between the current library and the best reactive/type-safe maintained alternative — not a three-way tie with thin raw-SQL wrappers for data-heavy apps.
 
 ### Project Stages (File 00)
 Must include:
