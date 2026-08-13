@@ -1,7 +1,7 @@
 ---
 name: flutter-lessons-patterns
-description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 50 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
-version: 2.20.0
+description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 52 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
+version: 2.21.0
 triggers:
   - Starting any Flutter implementation task
   - Creating a new BL (backlog item) or Kanban card
@@ -2252,7 +2252,59 @@ grep -rln "UseCase" lib/features/*/presentation/ | wc -l      # vs UseCase-media
 
 ---
 
-## Related Skills
+## Pattern 51 — go_router Shells: relative child paths + measured-resolved-behaviour (LL-054)
+
+**Source:** CarSah (2026-08-12) — BL-075 (the 3-tab navigation shell). Two lessons from one round.
+
+**Level:** 🚪 GATE · MUST — both are machine-detectable; the second is exactly the "a gate measures the source, not the behaviour" shape.
+
+**Rule A — Branch child paths MUST be RELATIVE.** go_router concatenates parent+child paths LITERALLY. An absolute child path (`'/history/detail/:id'`) nested under a `/history` branch resolves to `/history/history/detail/:id` → Page Not Found. Only a relative child (`'detail/:id'`) resolves to `/history/detail/:id`.
+
+```dart
+// ❌ BROKEN — resolves to /history/history/detail/:id
+GoRoute(path: '/history', routes: [GoRoute(path: '/history/detail/:id', ...)])
+// ✅ CORRECT
+GoRoute(path: '/history', routes: [GoRoute(path: 'detail/:id', ...)])
+```
+
+**Rule B — Path collectors must measure RESOLVED full paths, never declared spellings.** Both TC-NAV-001 and the reachability gate stayed green while the route above was broken at resolution, because they collected `route.path` as declared. Walk the PARSED tree (`router.configuration.routes`) and join parent+child the way go_router does:
+
+```dart
+String full = route.path.startsWith('/') ? '$parent${route.path}' : '$parent/${route.path}';
+```
+
+The device walk found the Page Not Found that the suite could not see — Rule B converts that regression class into suite-red.
+
+**Verification:** any shell/route-structure change gets a device tap through a NESTED route (e.g. list → detail) — the one shape regex/unit collectors measure least accurately. Also walk one tab switch in BOTH locales when the shell has a deliberate directional override (RTL order pinning: assert the bar's `Directionality` is LTR in the Arabic app — Home stays left).
+
+---
+
+## Pattern 52 — Repeated CI Failures Are a Forensic Investigation, Not a Push Race (LL-055)
+
+**Source:** CarSah (2026-08-13) — STOP-38: a widget test (`rollback_flow_test`, TC-HIST-006) hung on Linux CI only. **Five fix attempts in ~3 hours, each ~25 min of runner time wasted, all cancelled — because each was a hypothesis → patch → push → wait, with NO reproduction of the failing environment first.** The lesson is the founder's catch, proven by the run log.
+
+**Level:** 📏 RULE · SHOULD — process discipline, not machine-detectable.
+
+**The failure pattern (what NOT to do):**
+```
+1. Hypothesis about the hang → patch → push → CI runs 20–50 min → cancelled → review
+2. New hypothesis → patch → push → CI runs again → cancelled → review
+3. ...five times. ~2 hours of runner time. Zero green runs. One signature.
+```
+Each attempt *felt* like progress; the run log shows five identical executions of the same unverified guess. Local macOS stayed green (430/430) — the classic STOP-28 signature (passes here, hangs on Linux) — and the written rule ("reproduce Linux before fixing") was ignored because it was not enforced on the fix process itself.
+
+**The forensic method (what to do instead):**
+1. **Isolate FIRST, hypothesize SECOND.** Run the failing file ALONE on the failing platform (CI `workflow_dispatch` on a branch, or a Linux container locally) before writing any fix. A 25-minute whole-suite run to discover nothing is 25 minutes wasted; a single-file run localises in minutes.
+2. **Instrument, don't guess.** Add temporary prints/markers around the suspect chain (start/seed, the awaited call, teardown) — the run tells you WHERE it hangs; only then do you know WHAT to fix. The auditor's three diag runs (isolate 006 → instrument rescheduleNotifications → instrument 006 start/seed) produced more truth than the five fix attempts combined.
+3. **One run per question.** Each CI run should answer exactly one question (does it hang without the suite? does it hang at seed? does it hang at teardown?). Mixing questions = unreadable runs.
+4. **Count the cost aloud.** Before attempt N+1 of the same signature, state: "N attempts, X minutes of runner time, same signature — what have we MEASURED that we didn't know before?" If the answer is nothing new, the next attempt is not a fix, it's a repeat.
+5. **A green local run is not evidence of a Linux fix** — it never was (STOP-28). The ONLY evidence is a green run on the failing platform itself.
+
+**The meta-lesson (why this recurs):** a written rule ("reproduce the failing env first") exists in the lessons, but the fix process had no gate on it — so five rounds re-learned it at ~25 min each. **Process rules need the same enforcement as code rules:** when the same signature recurs twice, the process itself is the defect — switch to forensic mode (isolate + instrument) and do not push another hypothesis until a measurement exists.
+
+**Verification:** when a CI hang recurs 2+ times with the same signature, the next commit MUST be a diag run (isolate/instrument), not a fix — reviewable in the commit message itself.
+
+---
 
 - **flutter-design-anti-patterns** — 31 Flutter design anti-patterns across 14 categories. Includes custom_lint plugin (3 core rules) and SPIKE regex detector. Load for any UI-related task. 🔗 `~/.hermes/skills/flutter/flutter-design-anti-patterns/`
 - **flutter-input-hardening** — Centralized input sanitization and validation for Flutter
