@@ -1,7 +1,7 @@
 ---
 name: flutter-lessons-patterns
 description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 52 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
-version: 2.21.0
+version: 2.22.0
 triggers:
   - Starting any Flutter implementation task
   - Creating a new BL (backlog item) or Kanban card
@@ -28,7 +28,7 @@ related_skills:
 # Flutter Cross-Project Patterns — Unified Programming Lessons
 
 > **Sources:** CarSah (LL-001–LL-020) + Hermex_Android (LL-001–LL-042)
-> **Patterns: 49** (1–8: CarSah core, 9–12: Android build, 13–17: Hermex core, 18–28: Hermex extended, 29–30: Hermex HERMEX-007, 31: Swarm governance, 32: Hermex meta-pattern, 33: Azdal stored-first-decision, 34: Azdal reactive-service, 35: Azdal compute-locally, 36: Azdal ephemeral-message-lifecycle, 37: Azdal LLM-no-actionable-UI, 38: Android-Tecno-INTERNET, 39: Azdal widget-answered-once, 40: Azdal full-rewrite-callback-verification, 41-44: Hermex RC6, 45: Hermex shared-file, 46-48: Azdal Stage 4, 49: CarSah design-system)
+> **Patterns: 49** (1–8: core Flutter, 9–12: Android build, 13–17: core mobile, 18–28: extended mobile, 29–30: meta, 31: Swarm governance, 32: meta-pattern, 33: stored-first-decision, 34: reactive-service, 35: compute-locally, 36: ephemeral-message-lifecycle, 37: LLM-no-actionable-UI, 38: Android-OEM-INTERNET, 39: widget-answered-once, 40: full-rewrite-callback-verification, 41-44: RC6 era, 45: shared-file, 46-48: Stage 4, 49: design-system)
 > **Purpose:** This is the SINGLE source of truth for ALL Flutter/Dart/Android programming lessons. Load before every implementation task. Governance/process lessons belong in `~/.hermes/swarm/00_governance_lessons.md`.
 >
 > **Enforcement levels (adopted 2026-08-11 — founder decision):** every pattern is classified by two exclusion filters then a weighted score:
@@ -118,7 +118,7 @@ verification:
 - **Issue:** Lead Architect decomposed project as: all 8 features → single QA phase at end. This "Big Bang Testing" pattern means defects discovered late have exponentially higher fix costs and risk cascading rework across already-completed features.
 - **Root Cause:** Decomposition strategy treated QA as a final gate rather than a continuous phased gate. No rule in the Global Contract or Lead Architect's SOUL enforces phased testing.
 - **Impact:** If QA found a fundamental issue (e.g., SSE streaming breaks on certain responses), ALL features depending on Chat would need rework — potentially F-003, F-004, F-005, F-006, F-007.
-- **Severity:** 🔴 High — applies to ALL future projects, not just Hermex Android
+- **Severity:** 🔴 High — applies to ALL future projects, not just the project that surfaced it
 - **Prevention Rule:** QA must be decomposed into phases matching feature delivery groups. Each phase must pass its QA gate before the next phase begins implementation. The sequence should follow: F-001 build → QA → ✅ → F-002+F-003 build → QA integration → ✅ → F-004+F-005+F-006 build → QA → ✅ → F-007+F-008 build → QA → ✅ → Final integration QA → Zero-Trust Audit → Release.
 - **Governance Impact:** This rule must be added to `FLUTTER_GLOBAL_CONTRACT.md` (new rule: "No Big Bang QA — Phased Testing Mandatory") and `flutter-lead-architect/SOUL.md` (decomposition constraint).
 - **Linked Decision ID:** N/A (process gap — discovered in post-mortem)
@@ -165,7 +165,7 @@ validator: (value) => value.isEmpty ? AppLocalizations.of(context)!.odometerRequ
 - **Date:** 2026-07-06
 - **Stage:** Post-Mortem (MoA Audit)
 - **Source:** Triple Chinese MoA analysis of Hermex Android
-- **Issue:** `widget_test.dart` called `HermexApp()` directly without wrapping it in `ProviderScope`. The main `runApp()` in `main.dart` does wrap with `ProviderScope`, but the test did not. This caused the most basic smoke test to fail: "HermexApp renders without crashing — FAILED."
+- **Issue:** `widget_test.dart` called `TheApp()` directly without wrapping it in `ProviderScope`. The main `runApp()` in `main.dart` does wrap with `ProviderScope`, but the test did not. This caused the most basic smoke test to fail: "TheApp renders without crashing — FAILED."
 - **Root Cause:** No rule mandated that the smoke test be written FIRST (before feature implementation) or that it must mirror the exact widget tree from `main.dart`. Smoke test was likely written after features were complete, and the ProviderScope dependency was missed.
 - **Impact:** 402 tests passed but the single most important test — "does the app even load?" — failed. This means no one could verify end-to-end functionality through automated tests.
 - **Prevention Rule:** Smoke Test First. Every Flutter project MUST have `App renders without crashing` as the FIRST test, mirroring `main.dart`'s widget tree exactly (including ProviderScope). This test must pass before any feature implementation begins.
@@ -332,7 +332,7 @@ validator: (value) => value.isEmpty ? AppLocalizations.of(context)!.odometerRequ
 
 **Rule:** Every backlog item must be completable in ≤1 working day. BLs exceeding 1 day must be split. Any BL running >1 day is auto-blocked for architect review.
 
-**Why:** Large BLs mask individual mismatches that compound into multi-round rework (CarSah Stage 5 took 11 days because BLs spanned 3+ days).
+**Why:** Large BLs mask individual mismatches that compound into multi-round rework (one project's Stage 5 took 11 days because BLs spanned 3+ days).
 
 ---
 
@@ -510,7 +510,7 @@ release {
 
 **Detection:** `python3 <skill-dir>/scripts/detect.dart.py lib/ --severity P0 --json`
 
-**CarSah baseline** (92 files, 2026-07-11): 15 hardcoded colors, 1 fixed-dimension widget, 2 missing text-scaling hits.
+**Baseline** (92 files): 15 hardcoded colors, 1 fixed-dimension widget, 2 missing text-scaling hits.
 
 ---
 
@@ -670,11 +670,11 @@ final response = await _dio.get('/api/jobs', queryParameters: {'include_disabled
 - **Date:** 2026-07-12
 - **Stage:** T3-3 Investigation (API mismatch)
 - **Files Affected:** lib/features/tasks/data/task_repository.dart, app-spec/06_api_contract.md
-- **Lesson:** The Hermes API Server's `GET /api/jobs` endpoint defaults `include_disabled` to `false`, returning only enabled/active jobs. Paused jobs (`enabled: false`, `state: "paused"`) are silently excluded. The Hermex Flutter client's `TaskRepository.getAll()` was not passing `include_disabled=true`, so the Tasks page showed zero jobs despite 4 paused jobs existing in `~/.hermes/cron/jobs.json`.
+- **Lesson:** A backend API's list endpoint defaults a flag to `false`, returning only enabled/active jobs. Paused jobs (`enabled: false`, `state: "paused"`) are silently excluded. The client's repository method was not passing `include_disabled=true`, so the page showed zero items despite 4 paused items existing in the backend.
 - **Root Cause:** API contract spec (`06_api_contract.md` line 302) incorrectly stated "Returns all jobs regardless of status (active, paused, scheduled, etc.)" The actual default behavior excludes disabled jobs. The `include_disabled` query parameter was not documented in the spec, and the Flutter client did not pass it.
 - **Verification:** `curl "http://localhost:8642/api/jobs"` → `{"jobs": []}`; `curl "http://localhost:8642/api/jobs?include_disabled=true"` → returns all 4 paused jobs. `hermes cron list` (CLI) also defaults to `include_disabled=False`.
 - **Prevention Rule:** Always test API endpoints with `?include_disabled=true` when paused/disabled entities are expected. Document ALL query parameters in `06_api_contract.md`. For Flutter clients fetching entity lists that include paused items, always pass `include_disabled=true`.
-- **Fix (Hermex):** Add `'include_disabled': 'true'` to `queryParameters` in `TaskRepository.getAll()` (line 31 of `task_repository.dart`).
+- **Fix:** Add `'include_disabled': 'true'` to `queryParameters` in `TaskRepository.getAll()` (line 31 of `task_repository.dart`).
 - **Linked Decision ID:** DEC-T3-JOBSFILTER
 
 </details>
@@ -710,15 +710,15 @@ ls -la ~/.hermes/swarm/processed_violations.json  # ← must exist
 **Rule:** Every Flutter widget test that renders the app must wrap it in `ProviderScope`, exactly as `main.dart` does. The smoke test ("App renders without crashing") must pass BEFORE any feature implementation begins.
 
 ```dart
-// ❌ BROKEN — test calls HermexApp() without ProviderScope
+// ❌ BROKEN — test calls TheApp() without ProviderScope
 testWidgets('App renders', (tester) async {
-  await tester.pumpWidget(const HermexApp()); // CRASH — no ProviderScope
+  await tester.pumpWidget(const TheApp()); // CRASH — no ProviderScope
 });
 
 // ✅ CORRECT
 testWidgets('App renders', (tester) async {
   await tester.pumpWidget(
-    const ProviderScope(child: HermexApp()),
+    const ProviderScope(child: TheApp()),
   );
 });
 ```
@@ -734,7 +734,7 @@ testWidgets('App renders', (tester) async {
 - **Date:** 2026-07-06
 - **Stage:** Post-Mortem (MoA Audit)
 - **Source:** Triple Chinese MoA analysis of Hermex Android
-- **Issue:** `widget_test.dart` called `HermexApp()` directly without wrapping it in `ProviderScope`. The main `runApp()` in `main.dart` does wrap with `ProviderScope`, but the test did not. This caused the most basic smoke test to fail: "HermexApp renders without crashing — FAILED."
+- **Issue:** `widget_test.dart` called `TheApp()` directly without wrapping it in `ProviderScope`. The main `runApp()` in `main.dart` does wrap with `ProviderScope`, but the test did not. This caused the most basic smoke test to fail: "TheApp renders without crashing — FAILED."
 - **Root Cause:** No rule mandated that the smoke test be written FIRST (before feature implementation) or that it must mirror the exact widget tree from `main.dart`. Smoke test was likely written after features were complete, and the ProviderScope dependency was missed.
 - **Impact:** 402 tests passed but the single most important test — "does the app even load?" — failed. This means no one could verify end-to-end functionality through automated tests.
 - **Prevention Rule:** Smoke Test First. Every Flutter project MUST have `App renders without crashing` as the FIRST test, mirroring `main.dart`'s widget tree exactly (including ProviderScope). This test must pass before any feature implementation begins.
@@ -961,7 +961,7 @@ Future<void> sendMessage(String text) async {
   - Smoke test reaches screen: ← MANDATORY
 ```
 
-**Why:** 3 of 8 Hermex features (37.5%) were fully implemented with passing tests but unreachable because the router used placeholder stubs. The project's real completion rate was ~50%, not 100%.
+**Why:** 3 of 8 features in one project (37.5%) were fully implemented with passing tests but unreachable because the router used placeholder stubs. The project's real completion rate was ~50%, not 100%.
 
 ---
 
@@ -1293,7 +1293,7 @@ state = state.copyWith(messages: [...state.messages, userMessage]);
 - [ ] What test expectations would this change invalidate?
 - [ ] Have I traced the full data flow from trigger → mutation → UI?
 
-**Why:** Single-minded task execution is the #1 cause of regression bugs. Every Hermex Android regression (LL-029 duplicate messages, LL-023 fake connection, LL-022 redaction artifact, LL-042 disabled jobs filter) shares a common root cause: the implementer focused on what they were adding without checking what they would break. A 30-second impact analysis before coding prevents hours of debugging.
+**Why:** Single-minded task execution is the #1 cause of regression bugs. Every regression in these codebases (LL-029 duplicate messages, LL-023 fake connection, LL-022 redaction artifact, LL-042 disabled jobs filter) shares a common root cause: the implementer focused on what they were adding without checking what they would break. A 30-second impact analysis before coding prevents hours of debugging.
 
 ---
 
@@ -1303,15 +1303,15 @@ state = state.copyWith(messages: [...state.messages, userMessage]);
 **LL-046: Impact Analysis Before Implementation — Never code without downstream analysis
 - **Date:** 2026-07-12
 - **Stage:** HERMEX-007 (EPIC Closure — Post-Mortem)
-- **Files Affected:** Multiple — cross-cutting pattern observed across all Hermex Android lessons
-- **Lesson:** Every regression bug in Hermex Android (duplicate messages LL-029, fake connection LL-023, API key redaction LL-022, disabled jobs filter LL-042, build namespace LL-024, Isar+ProGuard LL-025, cleartext blocking LL-027) shares a common pattern: the implementer coded the immediate fix without analyzing what else their change would affect. A 30-second downstream impact analysis before implementation would have caught every single one.
+- **Files Affected:** Multiple — cross-cutting pattern observed across all project lessons
+- **Lesson:** Every regression bug in these codebases (duplicate messages LL-029, fake connection LL-023, API key redaction LL-022, disabled jobs filter LL-042, build namespace LL-024, Isar+ProGuard LL-025, cleartext blocking LL-027) shares a common pattern: the implementer coded the immediate fix without analyzing what else their change would affect. A 30-second downstream impact analysis before implementation would have caught every single one.
 - **Root Cause:** No meta-pattern exists that requires "impact analysis" as a pre-implementation step. Developers focus on the specific bug/feature without tracing the full data flow from trigger → mutation → API call → state change → UI update.
 - **Prevention Rule:** Before any implementation, trace the full impact chain: Which providers read this state? Which widgets listen to these providers? Which API calls consume this data? What test expectations would this change invalidate?
 - **Linked Decision ID:** N/A (meta-pattern — applies across all lessons)
 
 </details>
 
-## Pattern 33 — Stored First Decision: Never Re-Call Non-Deterministic APIs (Azdal Bug 2)
+## Pattern 33 — Stored First Decision: Never Re-Call Non-Deterministic APIs
 **Level:** 📏 RULE · MUST NOT — Stored-first decision — no lint; test possible but no standing gate
 
 
@@ -1375,7 +1375,7 @@ Future<void> _confirmTransaction() async {
 
 ---
 
-## Pattern 34 — Riverpod Reactive Service: Bridge Platform SDK Callbacks to StateNotifier (Azdal Voice Refactor)
+## Pattern 34 — Riverpod Reactive Service: Bridge Platform SDK Callbacks to StateNotifier
 **Level:** 📏 RULE · SHOULD — Reactive service pattern — design pattern
 
 
@@ -1487,7 +1487,7 @@ Future<void> _toggleVoice() async {
 
 ---
 
-## Pattern 35 — Compute Derived Values Locally: Never Trust LLM Math (Azdal Compound Split)
+## Pattern 35 — Compute Derived Values Locally: Never Trust LLM Math
 **Level:** 📏 RULE · MUST NOT — Compute locally — no lint distinguishes LLM-derived values
 
 
@@ -1529,7 +1529,7 @@ final total = _splits.fold<int>(
 - Non-programming lessons (governance, process, swarm) → save to `~/.hermes/swarm/00_governance_lessons.md`
 | HERMEX-007 lessons (LL-041 through LL-046) recorded by flutter-documentation-steward as the final kanban task of each EPIC — this file is the single source of truth for all cross-project Flutter lessons
 
-## Pattern 36 — Ephemeral Message Lifecycle: Track Id, Remove, Replace (Azdal Chat)
+## Pattern 36 — Ephemeral Message Lifecycle: Track Id, Remove, Replace
 **Level:** 📏 RULE · SHOULD — Ephemeral message lifecycle — implementation pattern
 
 
@@ -1573,7 +1573,7 @@ chatNotifier.addBotMessage('تم استخراج 3 بنود',   // 2. ADD final r
 
 ---
 
-## Pattern 37 — LLM Must Not Emit Actionable UI: App Constructs UI From Verified Data (Azdal System Prompt Fix)
+## Pattern 37 — LLM Must Not Emit Actionable UI: App Constructs UI From Verified Data
 **Level:** 📏 RULE · MUST NOT — LLM prompt discipline — manual review
 
 
@@ -1643,7 +1643,7 @@ The system prompt actively pushed Gemini toward Path 1. Path 2 was the fallback 
 
 ---
 
-## Pattern 38 — Android INTERNET Permission on Custom OEM ROMs (Azdal Tecno HiOS)
+## Pattern 38 — Android INTERNET Permission on Custom OEM ROMs
 **Level:** 🚪 GATE · MUST — AndroidManifest INTERNET permission — preflight/CI grep can verify; all network fails
 
 
@@ -1677,7 +1677,7 @@ with hostname, errno = 7)
 
 ---
 
-## Pattern 39 — Widget "Answered Once": Buttons Disabled After First Action (Azdal Widget Lifecycle)
+## Pattern 39 — Widget "Answered Once": Buttons Disabled After First Action
 **Level:** 📏 RULE · SHOULD — Answered-once widget — widget-testable but no standing gate
 
 
@@ -1788,7 +1788,7 @@ The highlighting logic (`isConfirmed ? _success : _cyan`) correctly shows which 
 
 ---
 
-## Pattern 40 — Full-File Rewrite Callback Verification (Azdal Camera Regression)
+## Pattern 40 — Full-File Rewrite Callback Verification
 **Level:** 📏 RULE · SHOULD — Rewrite callback checklist — manual verification
 
 
@@ -1802,7 +1802,7 @@ The highlighting logic (`isConfirmed ? _success : _cyan`) correctly shows which 
 4. Run `git diff --stat` to confirm only intended sections changed
 5. Deploy to device and physically tap every interactive element
 
-**Example bug:** During Azdal's conversational redesign, `chat_screen.dart` was completely rewritten. The `_InputBar` widget wiring inadvertently replaced `onCamera: _pickReceiptImage` with an empty lambda `onCamera: () { // NOT IMPLEMENTED }`. The analyzer didn't catch it (empty lambdas are valid Dart). Only live device testing caught it when the camera button appeared grayed out.
+**Example bug:** During one project's conversational redesign, `chat_screen.dart` was completely rewritten. The `_InputBar` widget wiring inadvertently replaced `onCamera: _pickReceiptImage` with an empty lambda `onCamera: () { // NOT IMPLEMENTED }`. The analyzer didn't catch it (empty lambdas are valid Dart). Only live device testing caught it when the camera button appeared grayed out.
 
 **Prevention:** Prefer targeted `patch` edits over full-file `write_file` for widget classes. When `write_file` is necessary (too many changes for patches), run the callback verification checklist immediately after.
 
@@ -2024,7 +2024,7 @@ done
 
 ---
 
-- **Last Updated:** 2026-07-18 — v2.15.0 — New Patterns 46–48 (Azdal Stage 4 cross-project): Never-Say-No-Data (cold-start UX), Live-Device Verification Supremacy (tests pass ≠ works), Regex-Gate Fallback + Disabled-Button Colors (LL-010, LL-011). Patterns count: 48.
+- **Last Updated:** 2026-07-18 — v2.15.0 — New Patterns 46–48 (cross-project Stage 4): Never-Say-No-Data (cold-start UX), Live-Device Verification Supremacy (tests pass ≠ works), Regex-Gate Fallback + Disabled-Button Colors (LL-010, LL-011). Patterns count: 48.
 
 ---
 
@@ -2087,7 +2087,7 @@ PGPASSWORD='<pwd>' psql "postgresql://postgres:***@db.<ref>.supabase.co:5432/pos
   -c "SELECT * FROM purchases WHERE user_id = '<uuid>' ORDER BY created_at DESC LIMIT 5;"
 ```
 
-**Why (from Azdal Stage 4):** 5 critical bugs found AFTER `flutter analyze` clean, `flutter test` 34/34 passing, Zero-Trust Auditor APPROVE with 0 CRITICAL, and SCSI Guardian ALL CLEAR:
+**Why (from one project's Stage 4):** 5 critical bugs found AFTER `flutter analyze` clean, `flutter test` 34/34 passing, Zero-Trust Auditor APPROVE with 0 CRITICAL, and SCSI Guardian ALL CLEAR:
 1. Purchase-confirmation insert against columns that don't exist on live table (100% failure rate)
 2. Submit button never disabled (unlimited duplicate writes)
 3. Success messages showing same sentence twice
@@ -2303,6 +2303,21 @@ Each attempt *felt* like progress; the run log shows five identical executions o
 **The meta-lesson (why this recurs):** a written rule ("reproduce the failing env first") exists in the lessons, but the fix process had no gate on it — so five rounds re-learned it at ~25 min each. **Process rules need the same enforcement as code rules:** when the same signature recurs twice, the process itself is the defect — switch to forensic mode (isolate + instrument) and do not push another hypothesis until a measurement exists.
 
 **Verification:** when a CI hang recurs 2+ times with the same signature, the next commit MUST be a diag run (isolate/instrument), not a fix — reviewable in the commit message itself.
+
+### Mandatory Pre-Push Checklist (every implementer, every push — no exceptions)
+
+Before ANY push to the shared tree, the implementer must have run ALL of:
+
+| # | Check | Command / proof |
+|---|---|---|
+| 1 | **Local full suite** | `flutter test --concurrency=1 --timeout 60s` — ALL pass locally |
+| 2 | **Analyze clean** | `flutter analyze` — No issues found |
+| 3 | **Failing-platform reproduction** | IF the row involves a platform-specific defect (Linux CI hang, iOS-only, OEM ROM): the failing file ALONE was run on that platform BEFORE the fix, and the fix is measured against that isolation result |
+| 4 | **One question per run** | The CI run this push will answer is named in the commit message (e.g. "answers: does 006 hang alone?") |
+| 5 | **Cost counted aloud** | If this is attempt N+1 of the same signature: the commit message states N attempts + what NEW measurement this run produces (or the push is a repeat, which is forbidden) |
+| 6 | **Diff scope named** | `git diff --name-only` listed — no surprise files (e.g. unrelated Waves work) ride along |
+
+If ANY row is not provable, the push is not allowed — fix the gap first. A push without rows 3–5 during a repeated-CI-failure is a **push race**, not a fix (LL-055).
 
 ---
 
