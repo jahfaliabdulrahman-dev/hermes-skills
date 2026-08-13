@@ -1,7 +1,7 @@
 ---
 name: flutter-lessons-patterns
-description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 52 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
-version: 2.22.0
+description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 53 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
+version: 2.23.0
 triggers:
   - Starting any Flutter implementation task
   - Creating a new BL (backlog item) or Kanban card
@@ -2318,6 +2318,25 @@ Before ANY push to the shared tree, the implementer must have run ALL of:
 | 6 | **Diff scope named** | `git diff --name-only` listed — no surprise files (e.g. unrelated Waves work) ride along |
 
 If ANY row is not provable, the push is not allowed — fix the gap first. A push without rows 3–5 during a repeated-CI-failure is a **push race**, not a fix (LL-055).
+
+---
+
+## Pattern 53 — One Attempt Is Half the Truth: Open Every Attempt Before Claiming Attribution (LL-056)
+
+**Source:** CarSah (2026-08-13) — STOP-38 closure round. The same commit (`1985b0a`) was re-run THREE times and produced THREE different outcomes: attempt 1 failed `add_refresh` + `invoice_photo`; attempt 3 failed `locale_switch`; attempt 2 was **effectively green (430/430, Build ✅, Merged-manifest ✅ — only the artifact upload failed on quota)**. The implementer's letter cited attempt 1 and declared the founder's attribution wrong; the founder's attribution matched attempt 3. **Neither was lying — each had read one attempt.** The strongest evidence in the whole round (the near-green attempt 2) was absent from the letter because nobody opened all three.
+
+**Level:** 🚪 GATE · MUST — a delivery letter that cites CI evidence must list EVERY attempt.
+
+**The rule:** When a delivery cites a CI run as evidence:
+1. **Open every attempt** (`actions/runs/<id>/attempts/<n>/jobs`), not just the latest log — the run id alone hides which attempt an evidence block describes.
+2. **List the outcome of each attempt** in the letter — N attempts, N rows: what passed, what failed, what was infra-only (quota, runner TLS, upload).
+3. **Do not declare a human wrong on the basis of one attempt.** If your evidence and theirs differ, the difference is data (the suite is nondeterministic under load), not proof either of you lied.
+4. **The greenest attempt is the strongest evidence** — a near-green run (all but infra upload) is closer to "the suite passes" than any red run is to "the suite fails". It belongs in the letter, not hidden because it was not the one you cited.
+5. **N consecutive green runs close a nondeterminism STOP together with the flake question** — the failure sets from N runs are the data that names the cause, a measurement, not another hypothesis.
+
+**Meta-lesson:** "the claim built on one attempt is half the truth no matter how honest" — and "the strongest evidence can be lost because nobody opened all the attempts". The CI evidence section of a delivery letter is a **complete ledger of attempts**, not a single cherry-picked citation.
+
+**Verification:** any delivery letter citing a run that has >1 attempt must contain an attempts table. Auditor checks: `gh api .../runs/<id>/attempts` count matches the letter's rows.
 
 ---
 
