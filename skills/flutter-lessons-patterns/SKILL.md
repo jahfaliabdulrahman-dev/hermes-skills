@@ -1,7 +1,7 @@
 ---
 name: flutter-lessons-patterns
-description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 53 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
-version: 2.23.0
+description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 54 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task.
+version: 2.24.0
 triggers:
   - Starting any Flutter implementation task
   - Creating a new BL (backlog item) or Kanban card
@@ -2337,6 +2337,24 @@ If ANY row is not provable, the push is not allowed — fix the gap first. A pus
 **Meta-lesson:** "the claim built on one attempt is half the truth no matter how honest" — and "the strongest evidence can be lost because nobody opened all the attempts". The CI evidence section of a delivery letter is a **complete ledger of attempts**, not a single cherry-picked citation.
 
 **Verification:** any delivery letter citing a run that has >1 attempt must contain an attempts table. Auditor checks: `gh api .../runs/<id>/attempts` count matches the letter's rows.
+
+---
+
+## Pattern 54 — The Linter's Suggestion Is Not Always the Fix: Conflicting Analyzers (LL-057)
+
+**Source:** CarSah (2026-08-14) — CARRY-106 round. CI rejected `tasks?[index]?.id` with `use_null_aware_elements` (the linter suggests `?task`). The implementer applied the linter's suggestion literally → CI red AGAIN. Root cause found by measurement, not guesswork: the project runs TWO analyzers in CI — a newer one (suggests `?task`) and an OLDER one pinned inside `isar_generator` (does not understand `?task` — rejects it). One fix satisfies both: the plain statement form. `build_runner` was added to the local verification loop so the conflict surfaces locally, not in CI.
+
+**Level:** 📏 RULE · SHOULD — when a CI analyzer rejects your change and its suggestion causes ANOTHER rejection, suspect conflicting analyzers before trusting either.
+
+**The rule:** When a lint rejection appears, do not assume the linter's suggested replacement is correct:
+1. **Check for a second analyzer** — code-generation packages (isar_generator, build_runner plugins) pin their own analyzer versions, which can be older than the standalone `flutter analyze` one.
+2. **If two analyzers disagree** — the suggested form may fail the other. Prefer the form that satisfies BOTH (usually the more explicit/statement form).
+3. **Add codegen to the LOCAL verification loop** (`build_runner` before/with `flutter analyze`) so the conflict appears on the developer's machine, not as a CI round-trip.
+4. This is a measurement discovery: the fix came from reading WHY the second rejection happened, not from blindly following either tool.
+
+**Meta-lesson:** "the tool that flags the error is not the tool that defines the fix". A linter suggestion is a hypothesis, not an instruction — verify it against the FULL build pipeline.
+
+**Verification:** any round where a lint fix causes a second CI rejection must record the conflicting-analyzer check (or state why it does not apply) in the delivery letter.
 
 ---
 
