@@ -1,7 +1,7 @@
 # Hermes Skills — Production-Grade Agent Skills for Flutter, DevOps & Agent Operations
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Skills](https://img.shields.io/badge/skills.sh-16%20skills-6366f1)](https://skills.sh)
+[![Skills](https://img.shields.io/badge/skills.sh-17%20skills-6366f1)](https://skills.sh)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ea4aaa.svg)](https://github.com/sponsors/jahfaliabdulrahman-dev)
 
 **A curated collection of battle-tested agent skills forged in production Flutter projects (CarSah, Hermex Android, Azdal). Every pattern, pitfall, and protocol earned through real debugging sessions — 48 documented patterns and counting.**
@@ -35,6 +35,7 @@
 
 | Skill | Description | Size |
 |-------|-------------|------|
+| [`mcp-bridge-patterns`](skills/mcp-bridge-patterns/SKILL.md) | Build an MCP stdio bridge that connects any MCP host (Claude Desktop, Kimi) to an agent runtime over HTTP — zero-dependency server template (~5KB, no SDK), non-blocking dispatch with file persistence, two-namespace status resolution, and the stdio/PATH traps that make subprocess bridges fail only inside the client | 12 KB |
 | [`repo-front-door`](skills/repo-front-door/SKILL.md) | Polish any GitHub repo for outsiders — green CI, automated build artifacts, README structure with download-first layout, brand assets (avatar, social card with RTL support) | 9 KB |
 | [`skill-ecosystem-sync`](skills/skill-ecosystem-sync/SKILL.md) | Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub, ClawHub, worker profiles). 5-phase systematic procedure. The meta-skill that keeps all other skills current | 6 KB |
 | [`agent-repo-handoff-loop`](skills/agent-repo-handoff-loop/SKILL.md) | Two AI agents review each other's work through a git repo as the mailbox — token-free marker polling, no shared runtime, no API between them. The proudest pattern in this repo | 112 KB |
@@ -92,6 +93,7 @@ npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-sdk-changelo
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-ios-build-system
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill device-screen-verification
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill agent-repo-handoff-loop
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill mcp-bridge-patterns
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill repo-front-door
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill supabase-fullstack
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill github-project-audit
