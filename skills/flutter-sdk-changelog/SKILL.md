@@ -22,6 +22,9 @@ sources:
 > `$FLUTTER_ROOT` or `which flutter`, no hard-coded paths).
 > Drift is detected by `python3 scripts/check_freshness.py` — exit 1 means the published stable moved
 > ahead of these files. **If the gate fails, regenerate before answering any version question.**
+> The gate itself is tamper-tested: `python3 scripts/test_gate_tamper.py` seeds five defects (stale
+> header, deleted minor row, wrong Dart floor, wrong first-stable row, emptied deprecation reference)
+> and requires exit 1 with the right reason for each, plus a green control run.
 
 ## Rule 0 — never state a Flutter version from memory
 

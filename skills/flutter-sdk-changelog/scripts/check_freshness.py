@@ -137,6 +137,18 @@ def main() -> int:
             if sm and bucket:
                 sym2b.setdefault(sm.group(1), set()).add(bucket)
 
+        # Structural floor. Without it, an emptied or truncated reference makes every cross-check
+        # "unverifiable" and the gate reports green — the exact blindness this skill exists to prevent.
+        # Floors sit far below the real numbers at authoring time (172 symbols / 12 buckets) so a normal
+        # upstream release never trips them, while a gutted file always does.
+        MIN_SYMBOLS, MIN_BUCKETS, MIN_CROSSCHECKED = 80, 8, 15
+        buckets = {b for bs in sym2b.values() for b in bs}
+        if len(sym2b) < MIN_SYMBOLS or len(buckets) < MIN_BUCKETS:
+            problems.append(
+                f"DEPRECATION REFERENCE TOO THIN: parsed {len(sym2b)} symbols in {len(buckets)} release buckets "
+                f"(floor {MIN_SYMBOLS}/{MIN_BUCKETS}) -> the file is truncated or emptied; regenerate with "
+                "scripts/build_flutter_sdk_changelog.py --fetch")
+
         table = skill_md.split("Highest-impact deprecations")[-1].split("### Removed, not deprecated")[0]
         checked = 0
         for left, _mid, claimed in re.findall(r"^\|(.+?)\|(.+?)\|\s*(\d+\.\d+)\s*\|$", table, re.M):
@@ -151,6 +163,10 @@ def main() -> int:
                 problems.append(
                     f"TABLE ROW WRONG: {'/'.join(known)} claims first stable {claimed}, generated data says "
                     f"{sorted(set().union(*(sym2b[s] for s in known)))}")
+        if checked < MIN_CROSSCHECKED:
+            problems.append(
+                f"CROSS-CHECK TOO THIN: only {checked} highest-impact rows could be verified against the "
+                f"generated data (floor {MIN_CROSSCHECKED}) -> the table or the reference lost content")
         notes.append(f"cross-checked {checked} highest-impact rows against the generated deprecations")
 
     # ---------------------------------------------------------------- report
