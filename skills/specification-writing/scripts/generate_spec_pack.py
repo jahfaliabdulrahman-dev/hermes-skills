@@ -60,7 +60,7 @@ FILES = [
 | 22 | `22_admin_panel.md` | 6 ⚫ | Admin dashboard, moderation |
 | 23 | `23_support_operations.md` | 6 ⚫ | On-call, incident response |
 | 24 | `24_active_capabilities.md` | 6 ⚫ | Living inventory of what works |
-| 25 | `25_swarm_operating_playbook.md` | 6 ⚫ | Profiles, Kanban, EPIC gates |
+| 25 | `25_agent_operating_playbook.md` | 6 ⚫ | Profiles, Kanban, EPIC gates |
 
 ## 🚦 STAGE STATUS
 
@@ -458,7 +458,7 @@ lib/
 
 ## Device Targets
 """),
-    ("15", "DevOps & Release", "4 🔵", "MVP", ", [14_testing_acceptance.md](14_testing_acceptance.md), [25_swarm_operating_playbook.md](25_swarm_operating_playbook.md)", """
+    ("15", "DevOps & Release", "4 🔵", "MVP", ", [14_testing_acceptance.md](14_testing_acceptance.md), [25_agent_operating_playbook.md](25_agent_operating_playbook.md)", """
 ## CI/CD Pipelines
 
 | Pipeline | Trigger | Jobs | Artifacts |
@@ -475,7 +475,7 @@ lib/
 
 - Logs, crash reporting, analytics, alerts
 """),
-    ("16", "AI Agent Contract", "4 🔵", "MVP", ", [12_flutter_architecture.md](12_flutter_architecture.md), [18_implementation_backlog.md](18_implementation_backlog.md), [25_swarm_operating_playbook.md](25_swarm_operating_playbook.md)", """
+    ("16", "AI Agent Contract", "4 🔵", "MVP", ", [12_flutter_architecture.md](12_flutter_architecture.md), [18_implementation_backlog.md](18_implementation_backlog.md), [25_agent_operating_playbook.md](25_agent_operating_playbook.md)", """
 ## Agent Rules
 
 - Rule 1: ...
@@ -591,7 +591,7 @@ graph LR
 
 > Update continuously. This is the ACCURATE current state — not aspirational.
 """),
-    ("25", "Swarm Operating Playbook", "6 ⚫", "النشر والإنتاج", ", [16_ai_agent_contract.md](16_ai_agent_contract.md), [18_implementation_backlog.md](18_implementation_backlog.md)", """
+    ("25", "Agent Operating Playbook", "6 ⚫", "النشر والإنتاج", ", [16_ai_agent_contract.md](16_ai_agent_contract.md), [18_implementation_backlog.md](18_implementation_backlog.md)", """
 ## Profile-to-Responsibility Matrix
 
 | Profile | Responsibility | Never |
@@ -652,7 +652,7 @@ CANONICAL = {
     "22": "22_admin_panel.md",
     "23": "23_support_operations.md",
     "24": "24_active_capabilities.md",
-    "25": "25_swarm_operating_playbook.md",
+    "25": "25_agent_operating_playbook.md",
 }
 
 

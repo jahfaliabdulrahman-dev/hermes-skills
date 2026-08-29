@@ -7,7 +7,7 @@ triggers:
   - Before any Flutter PR merge
   - When UI/UX agent reviews a Flutter screen
   - When running design quality preflight checks
-  - Constitutional Court design scan cron job
+  - Scheduled design-scan job (weekly golden image diff)
 ---
 
 # Flutter Design Anti-Patterns — Deterministic Detection Rules
@@ -316,14 +316,14 @@ Then `flutter analyze` runs all rules automatically — IDE integration, CI-read
 
 ---
 
-## ═══ Integration with Swarm ═══
+## ═══ Integration Points ═══
 
 | Hook Point | Action |
 |------------|--------|
 | **IDE** | Red squiggles in VS Code/Android Studio (via `custom_lint` + `analysis_options.yaml`) |
 | **Pre-commit** | `flutter analyze` automatically runs custom_lint rules — block on ERROR |
 | **CI/CD** | Same `flutter analyze` in GitHub Actions — zero config |
-| **Constitutional Court** | Weekly golden image diff against Stitch references |
+| **Scheduled design scan** | Weekly golden image diff against reference screens |
 | **UI/UX Agent** | Load this skill before every task |
 | **PR Review** | Zero-Trust Auditor checks `flutter analyze` output |
 

@@ -346,7 +346,7 @@ PKG=$(grep -oP '^package\s+\K\S+' android/app/src/main/kotlin/**/MainActivity.kt
 - **Stage:** Release (first device install)
 - **Source:** Physical Android device install test
 - **Issue:** `namespace = "com.hermex.android"` in `build.gradle.kts` but `MainActivity.kt` declared `package com.jahfali.hermex_android`. Android resolved `android:name=".MainActivity"` relative to namespace → `com.hermex.android.MainActivity` → `ClassNotFoundException` → crash before splash screen.
-- **Root Cause:** 9-profile swarm generated code without coordination. DevOps Engineer set namespace, State Engineer set Kotlin package — no profile owned the end-to-end Android build correctness.
+- **Root Cause:** 9-profile agent fleet generated code without coordination. DevOps Engineer set namespace, State Engineer set Kotlin package — no profile owned the end-to-end Android build correctness.
 - **Impact:** App "لم يفتح نهائيا" (never opened). User saw nothing. Critical first-impression failure.
 - **Prevention Rule:** Android Verification Gate §1 — namespace in build.gradle.kts MUST equal MainActivity.kt package. Automated script verifies before every release.
 - **Linked Decision ID:** N/A (build configuration gap)
@@ -396,7 +396,7 @@ release {
 
 **Source:** hermex_android (2026-07-06) — MoA-audited 2026-07-06 → `~/Projects/hermex_android/app-spec/00_lessons_learned.md`
 
-**Rule:** No Flutter swarm profile may work on Android build configuration without loading the official Android skills.
+**Rule:** No Flutter worker profile may work on Android build configuration without loading the official Android skills.
 
 **Mandatory skills (MoA-corrected):**
 - `flutter-android-build-system` ← developer.android.com/build + isar.dev
@@ -416,7 +416,7 @@ release {
 - **Stage:** Release (first device install)
 - **Source:** Physical Android device install test
 - **Issue:** `namespace = "com.hermex.android"` in `build.gradle.kts` but `MainActivity.kt` declared `package com.jahfali.hermex_android`. Android resolved `android:name=".MainActivity"` relative to namespace → `com.hermex.android.MainActivity` → `ClassNotFoundException` → crash before splash screen.
-- **Root Cause:** 9-profile swarm generated code without coordination. DevOps Engineer set namespace, State Engineer set Kotlin package — no profile owned the end-to-end Android build correctness.
+- **Root Cause:** 9-profile agent fleet generated code without coordination. DevOps Engineer set namespace, State Engineer set Kotlin package — no profile owned the end-to-end Android build correctness.
 - **Impact:** App "لم يفتح نهائيا" (never opened). User saw nothing. Critical first-impression failure.
 - **Prevention Rule:** Android Verification Gate §1 — namespace in build.gradle.kts MUST equal MainActivity.kt package. Automated script verifies before every release.
 - **Linked Decision ID:** N/A (build configuration gap)
@@ -427,12 +427,12 @@ release {
 <details>
 <summary>📋 Full Original: LL-026</summary>
 
-**LL-026: Android Build Knowledge Gap — No official sources in swarm
+**LL-026: Android Build Knowledge Gap — No official sources in the agent fleet
 - **Date:** 2026-07-06
 - **Stage:** Post-Mortem (Root Cause Analysis)
 - **Source:** Comprehensive audit of all 9 Flutter profiles + Spec Pack
 - **Issue:** Zero profiles had Android build knowledge. Words `namespace`, `ProGuard`, `applicationId` appeared NOWHERE in any SOUL file. Spec File 10 (DevOps) was 19 lines — no Android build configuration checklist.
-- **Root Cause:** Swarm was designed for Dart/Flutter expertise only. Android native build system was an implicit blind spot — everyone assumed "someone else handles it."
+- **Root Cause:** The agent fleet was designed for Dart/Flutter expertise only. Android native build system was an implicit blind spot — everyone assumed "someone else handles it."
 - **Impact:** Systemic risk for ALL future Flutter projects.
 - **Prevention Rule — 3 New Skills Created from Official Sources:**
   1. `android-build-system` ← github.com/android/skills (Google AI-optimized) + developer.android.com
@@ -546,7 +546,7 @@ grep -rn "apiKey: \*\*\*" lib/ || true
 grep -rn 'api_key: \*\*\*' lib/ || true
 ```
 
-**Why:** Swarm SOUL-level security sanitization replaces API keys with `***` in output. These redacted outputs can be committed as literal source code (`apiKey: '***'`), silently breaking ALL authenticated API calls. The compiler does not catch this — `***` is valid Dart.
+**Why:** SOUL-level security sanitization replaces API keys with `***` in output. These redacted outputs can be committed as literal source code (`apiKey: '***'`), silently breaking ALL authenticated API calls. The compiler does not catch this — `***` is valid Dart.
 
 ---
 
@@ -557,11 +557,11 @@ grep -rn 'api_key: \*\*\*' lib/ || true
 - **Date:** 2026-07-07
 - **Stage:** Production Bug Recovery
 - **Source:** Abdulrahman report — "Agent Data (Skills, Memory, Insight) لا تعمل"
-- **Issue:** Two files (`api_client_provider.dart:73`, `connection_screen.dart:226`) contained `apiKey: ***` as a literal string instead of the `apiKey` variable. This redaction artifact — likely from the swarm's SOUL-level security sanitization — silently broke ALL API-dependent features. Every request carried the literal HTTP header `Authorization: Bearer ***`.
-- **Root Cause:** The MoA swarm's security layer replaced actual API key values with `***` during output redaction. These redacted outputs were then treated as source code and committed. No human or automated gate detected that `***` is not valid Dart syntax referencing a variable named `apiKey`. The compiler does not flag this — `***` is valid Dart (three `*` operators).
+- **Issue:** Two files (`api_client_provider.dart:73`, `connection_screen.dart:226`) contained `apiKey: ***` as a literal string instead of the `apiKey` variable. This redaction artifact — likely from the fleet's SOUL-level security sanitization — silently broke ALL API-dependent features. Every request carried the literal HTTP header `Authorization: Bearer ***`.
+- **Root Cause:** The agent fleet's security layer replaced actual API key values with `***` during output redaction. These redacted outputs were then treated as source code and committed. No human or automated gate detected that `***` is not valid Dart syntax referencing a variable named `apiKey`. The compiler does not flag this — `***` is valid Dart (three `*` operators).
 - **Impact:** Skills, Memory, Insights, Chat streaming, and any feature relying on `ApiClient` failed silently. Health endpoint returned 401 but error messages were not surfaced properly. The app appeared functional but every API call received "Unauthorized."
 - **Prevention Rule (PERMANENT — GOV-005):** No commit may pass if `grep -rn "apiKey: \*\*\*" lib/` or `grep -rn "api_key: \*\*\*" lib/` returns matches. These are SOUL-redaction artifacts that MUST be reverted to actual variable names before commit. Add to CI pre-commit hook and governance rules.
-- **Governance Impact:** Added to `00_swarm_operating_playbook.md` as permanent rule under §Governance.
+- **Process Impact:** Added to the agent operating playbook as a permanent pre-commit rule.
 - **Linked Decision ID:** N/A (security sanitization defect)
 
 </details>
@@ -655,8 +655,8 @@ final response = await _dio.get('/api/jobs', queryParameters: {'include_disabled
 
 ```bash
 # BEFORE claiming "Dedup is fixed":
-python3 ~/.hermes/swarm/violation_detector.py  # ← must show 0 violations
-ls -la ~/.hermes/swarm/processed_violations.json  # ← must exist
+python3 <your>/violation_detector.py       # ← must show 0 violations
+ls -la <your>/processed_violations.json    # ← must exist
 ```
 
 **Never:** describe what SHOULD exist without verifying it DOES exist. The gap between "designed in my head" and "written to disk" has caused 5 rounds of failed evaluations.

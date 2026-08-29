@@ -38,7 +38,7 @@ REQUIRED = {
     "22_admin_panel.md": ("6 ⚫", "Stage 6", None),
     "23_support_operations.md": ("6 ⚫", "Stage 6", None),
     "24_active_capabilities.md": ("6 ⚫", "Stage 6", None),
-    "25_swarm_operating_playbook.md": ("6 ⚫", "Stage 6", ["Route A", "Route B"]),
+    "25_agent_operating_playbook.md": ("6 ⚫", "Stage 6", ["Route A", "Route B"]),
 }
 
 STAGE_FILES = {

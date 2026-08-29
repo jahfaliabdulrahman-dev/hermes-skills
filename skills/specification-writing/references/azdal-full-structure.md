@@ -10,7 +10,7 @@ Ground truth from `~/Projects/<project>/app-spec/` (example: Azdal). 27 files ac
 00_project_overrides.md           — Deviations from standard spec pack
 00_lessons_learned.md             — LL-001 through LL-011, DEC-001 through DEC-037
 00_active_capabilities.md         — Current feature status inventory
-00_swarm_operating_playbook.md    — Profile-to-Kanban mappings, task templates
+00_agent_operating_playbook.md    — Profile-to-Kanban mappings, task templates
 ```
 
 ## Slots 01-19 — Core Specification

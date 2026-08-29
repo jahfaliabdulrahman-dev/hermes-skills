@@ -438,7 +438,7 @@ gradle.projectsEvaluated {
 }
 ```
 
-### 16c. Namespace-Verification (Post-Swarm / Pre-Release)
+### 16c. Namespace-Verification (Post-Generation / Pre-Release)
 
 AndroidManifest's `android:name=".MainActivity"` resolves relative to Gradle `namespace`. Mismatch → `ClassNotFoundException` → instant crash.
 

@@ -17,7 +17,7 @@ triggers:
 references:
   - Patterns 1-18 (core Flutter + Android + mobile) → references/patterns-01-18-core-android-mobile.md
   - Patterns 19-30 (extended mobile + meta) → references/patterns-19-30-extended-meta.md
-  - Patterns 31-44 (swarm + widgets + RC6 era) → references/patterns-31-44-swarm-widgets-rc6.md
+  - Patterns 31-44 (multi-agent + widgets + RC6 era) → references/patterns-31-44-agents-widgets-rc6.md
   - Patterns 45-54 (Stage 4 + design + meta lessons) → references/patterns-45-54-stage4-design-meta.md
 related_skills:
   - flutter-design-anti-patterns
@@ -82,20 +82,20 @@ Every pattern is classified by two exclusion filters then a weighted score:
 | 28 | [DUPLICATE — See Pattern 13] SSE Duplicate Message Prevention: Snapshot BEFORE Streaming (LL-029 — Extended) | patterns-19-30-extended-meta |
 | 29 | API Response Key Format: Use `data`, Not `messages` (LL-041) | patterns-19-30-extended-meta |
 | 30 | Build Responsibility: Lead Architect Coordinates, DevOps Builds (LL-044) | patterns-19-30-extended-meta |
-| 31 | Lessons Flow to Shared Knowledge Base (LL-045) | patterns-31-44-swarm-widgets-rc6 |
-| 32 | Impact Analysis Before Implementation (LL-046) | patterns-31-44-swarm-widgets-rc6 |
-| 33 | Stored First Decision: Never Re-Call Non-Deterministic APIs | patterns-31-44-swarm-widgets-rc6 |
-| 34 | Riverpod Reactive Service: Bridge Platform SDK Callbacks to StateNotifier | patterns-31-44-swarm-widgets-rc6 |
-| 35 | Compute Derived Values Locally: Never Trust LLM Math | patterns-31-44-swarm-widgets-rc6 |
-| 36 | Ephemeral Message Lifecycle: Track Id, Remove, Replace | patterns-31-44-swarm-widgets-rc6 |
-| 37 | LLM Must Not Emit Actionable UI: App Constructs UI From Verified Data | patterns-31-44-swarm-widgets-rc6 |
-| 38 | Android INTERNET Permission on Custom OEM ROMs | patterns-31-44-swarm-widgets-rc6 |
-| 39 | Widget "Answered Once": Buttons Disabled After First Action | patterns-31-44-swarm-widgets-rc6 |
-| 40 | Full-File Rewrite Callback Verification | patterns-31-44-swarm-widgets-rc6 |
-| 41 | Error-Handling Architecture: validateStatus + interceptor + sanitizeError (LL-047) | patterns-31-44-swarm-widgets-rc6 |
-| 42 | Certificate Pinning Uniform Wiring: Single ApiClient Provider (LL-048) | patterns-31-44-swarm-widgets-rc6 |
-| 43 | Reactive Profile Switching: Watch connectionProvider (LL-049) | patterns-31-44-swarm-widgets-rc6 |
-| 44 | Gate Rescan Integrity: Re-test SPECIFIC Rejected Findings (LL-050 / ADR-012) | patterns-31-44-swarm-widgets-rc6 |
+| 31 | Lessons Flow to Shared Knowledge Base (LL-045) | patterns-31-44-agents-widgets-rc6 |
+| 32 | Impact Analysis Before Implementation (LL-046) | patterns-31-44-agents-widgets-rc6 |
+| 33 | Stored First Decision: Never Re-Call Non-Deterministic APIs | patterns-31-44-agents-widgets-rc6 |
+| 34 | Riverpod Reactive Service: Bridge Platform SDK Callbacks to StateNotifier | patterns-31-44-agents-widgets-rc6 |
+| 35 | Compute Derived Values Locally: Never Trust LLM Math | patterns-31-44-agents-widgets-rc6 |
+| 36 | Ephemeral Message Lifecycle: Track Id, Remove, Replace | patterns-31-44-agents-widgets-rc6 |
+| 37 | LLM Must Not Emit Actionable UI: App Constructs UI From Verified Data | patterns-31-44-agents-widgets-rc6 |
+| 38 | Android INTERNET Permission on Custom OEM ROMs | patterns-31-44-agents-widgets-rc6 |
+| 39 | Widget "Answered Once": Buttons Disabled After First Action | patterns-31-44-agents-widgets-rc6 |
+| 40 | Full-File Rewrite Callback Verification | patterns-31-44-agents-widgets-rc6 |
+| 41 | Error-Handling Architecture: validateStatus + interceptor + sanitizeError (LL-047) | patterns-31-44-agents-widgets-rc6 |
+| 42 | Certificate Pinning Uniform Wiring: Single ApiClient Provider (LL-048) | patterns-31-44-agents-widgets-rc6 |
+| 43 | Reactive Profile Switching: Watch connectionProvider (LL-049) | patterns-31-44-agents-widgets-rc6 |
+| 44 | Gate Rescan Integrity: Re-test SPECIFIC Rejected Findings (LL-050 / ADR-012) | patterns-31-44-agents-widgets-rc6 |
 | 45 | Bundled-Task Pattern for Shared-File Conflicts (LL-051) | patterns-45-54-stage4-design-meta |
 | 46 | Never Say "No Data": Cold Start Intelligence (LL-009) | patterns-45-54-stage4-design-meta |
 | 47 | Live-Device Verification Supremacy (LL-010) | patterns-45-54-stage4-design-meta |

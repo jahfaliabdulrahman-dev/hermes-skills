@@ -29,12 +29,12 @@ curl -s 'https://www.skills.sh/sitemap-skills-2.xml' | grep -i '<skill-name>'
 
 **The #1 failure when auditing your OWN skills before publishing:** attributing success to the wrong variable.
 
-**Real example (2026-07-18):** A governance skill claimed constitutional scaffolding improved EPIC completion. Facts:
+**Real example (2026-07-18):** A shared-rules skill claimed its rule-file scaffolding improved EPIC completion. Facts:
 - Zero profiles ever loaded the skill
-- Zero cron jobs ran (Constitutional Court = placeholder)
+- Zero cron jobs ran (the scheduled audit was a placeholder)
 - Simultaneous change: SOUL files rewritten from 2-3 lines → 150-581 lines
 
-The governance constitution was a **spectator**, not a participant. SOUL quality was the real driver.
+The rule file was a **spectator**, not a participant. SOUL quality was the real driver.
 
 **Prevention:**
 1. Did the thing we CLAIM fixed it actually get USED?
@@ -63,4 +63,4 @@ When an official skill complements yours:
 | vercel-labs/find-skills | ✅ | Real, installed |
 | upstash/context7/find-docs | ✅ | Real, installed |
 | /s/find-document | ❌ | Dead alias |
-| swarm-governance | ❌ | REMOVED pre-pub (0 uses) |
+| agent-rules skill | ❌ | REMOVED pre-pub (0 uses) |

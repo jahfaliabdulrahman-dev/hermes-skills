@@ -1,7 +1,7 @@
-# Hermes Skills — Production-Grade Agent Skills for Flutter, DevOps & AI Governance
+# Hermes Skills — Production-Grade Agent Skills for Flutter, DevOps & Agent Operations
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Skills](https://img.shields.io/badge/skills.sh-12%20skills-6366f1)](https://skills.sh)
+[![Skills](https://img.shields.io/badge/skills.sh-16%20skills-6366f1)](https://skills.sh)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ea4aaa.svg)](https://github.com/sponsors/jahfaliabdulrahman-dev)
 
 **A curated collection of battle-tested agent skills forged in production Flutter projects (CarSah, Hermex Android, Azdal). Every pattern, pitfall, and protocol earned through real debugging sessions — 48 documented patterns and counting.**
@@ -15,7 +15,7 @@
 | Skill | Description | Size |
 |-------|-------------|------|
 | [`specification-writing`](skills/specification-writing/SKILL.md) | The AI-Agent App Build Specification Pack framework — 22-slot structure (27+ files) governing every project from product discovery to financial models and personal build plans. Enforces the NO PROCEDURAL REDUCTION rule. This is the blueprint every project starts from | 10 KB |
-| [`flutter-soul-stewardship`](skills/flutter-soul-stewardship/SKILL.md) | Exact procedure for writing and maintaining SOUL.md agent identity files — the REAL driver of multi-agent swarm performance. Deterministic, cross-profile, machine-verifiable | 4 KB |
+| [`flutter-soul-stewardship`](skills/flutter-soul-stewardship/SKILL.md) | Exact procedure for writing and maintaining SOUL.md agent identity files — the REAL driver of multi-agent performance. Deterministic, cross-profile, machine-verifiable | 4 KB |
 
 ### Flutter & Mobile
 
@@ -28,13 +28,16 @@
 | [`flutter-lessons-patterns`](skills/flutter-lessons-patterns/SKILL.md) | Cross-project Flutter patterns from CarSah + Hermex Android + Azdal — 48 documented patterns (up from 45), now including Azdal Stage-4 cross-project lessons (LL-009/010/011) | 120 KB |
 | [`flutter-patterns`](skills/flutter-patterns/SKILL.md) | Class-level Flutter patterns — ANR debugging (Signal 3/SIGQUIT), dialog transient file lifecycle, Flutter text field clipping, widget wrapping anti-patterns | 22 KB |
 | [`flutter-sdk-changelog`](skills/flutter-sdk-changelog/SKILL.md) | Flutter version facts an LLM cannot hold in weights: the Flutter↔Dart matrix (25 stable minors), 217 live `@Deprecated` members with replacements, `environment:` floors per language feature, and legacy-upgrade runbooks. **Nothing is hand-typed** — `scripts/build_flutter_sdk_changelog.py` regenerates every number from Google's release index + the `flutter/flutter` stable tree, and `scripts/check_freshness.py` exits 1 the day stable moves ahead of the docs | 68 KB |
+| [`flutter-ios-build-system`](skills/flutter-ios-build-system/SKILL.md) | iOS build system — Xcode, signing, TestFlight, App Store Connect. From the OFFICIAL docs.flutter.dev/deployment/ios guide + verified pitfalls from a first real iOS build (missing SDK platform, `pod install` tree side-effects) | 8 KB |
+| [`device-screen-verification`](skills/device-screen-verification/SKILL.md) | Visually verify what is actually on an Android device screen — `adb screencap` → local HTTP → agent vision. The gate that catches what `flutter analyze` and green tests cannot | 12 KB |
 
 ### Repository & DevOps
 
 | Skill | Description | Size |
 |-------|-------------|------|
 | [`repo-front-door`](skills/repo-front-door/SKILL.md) | Polish any GitHub repo for outsiders — green CI, automated build artifacts, README structure with download-first layout, brand assets (avatar, social card with RTL support) | 9 KB |
-| [`skill-ecosystem-sync`](skills/skill-ecosystem-sync/SKILL.md) | Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub, ClawHub, profile swarm). 5-phase systematic procedure. The meta-skill that keeps all other skills current | 6 KB |
+| [`skill-ecosystem-sync`](skills/skill-ecosystem-sync/SKILL.md) | Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub, ClawHub, worker profiles). 5-phase systematic procedure. The meta-skill that keeps all other skills current | 6 KB |
+| [`agent-repo-handoff-loop`](skills/agent-repo-handoff-loop/SKILL.md) | Two AI agents review each other's work through a git repo as the mailbox — token-free marker polling, no shared runtime, no API between them. The proudest pattern in this repo | 112 KB |
 | [`supabase-fullstack`](skills/supabase-fullstack/SKILL.md) | Complete Supabase workflow — frontend (supabase-js, SSR, auth/sessions), backend (Python, CLI, PostgreSQL), and DevOps (migrations, RLS, MCP). Merged from official @supabase/skills + production patterns from Azdal/Hermex | 12 KB |
 
 ### Research & Auditing
@@ -84,7 +87,11 @@ npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-android-buil
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-design-anti-patterns
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-lessons-patterns
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-patterns
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-isar-testing
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-sdk-changelog
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-ios-build-system
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill device-screen-verification
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill agent-repo-handoff-loop
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill repo-front-door
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill supabase-fullstack
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill github-project-audit
@@ -101,7 +108,7 @@ Every skill in this repository was born from a production failure that became a 
 - **LL-024 (ClassNotFoundException):** `namespace` in `build.gradle.kts` didn't match `MainActivity.kt` package. → `flutter-android-build-system` now gates every build with 5 preflight checks.
 - **LL-011 (Disabled Button Colors):** Material silently substitutes its default palette when `onPressed: null` — custom colors lost without error. → Same skill now enforces explicit `disabledBackgroundColor`/`disabledForegroundColor`.
 - **The cutoff-bridge with its own cutoff:** an upstream skill sold as "bridging the AI training cutoff" shipped a Flutter matrix that stopped at *3.27 / 3.29* — 6 stable minors and ~18 months behind — plus two wrong Dart mappings, because its CI validated frontmatter, link targets and prose style but never a single version number. → `flutter-sdk-changelog` generates every number from Google's release index and the `flutter/flutter` stable tree, and ships a freshness gate that exits 1 the day stable moves ahead (proven with 5 tamper tests, not just a green run).
-- **SOUL Quality Conundrum:** EPIC-001 failed in 27 minutes because 2-3 line SOUL.md files gave agents no identity. After rewriting SOULs to 150-581 lines, EPIC-002 succeeded. → `flutter-soul-stewardship` is the real governance — not constitutional courts, but strong agent identity.
+- **SOUL Quality Conundrum:** EPIC-001 failed in 27 minutes because 2-3 line SOUL.md files gave agents no identity. After rewriting SOULs to 150-581 lines, EPIC-002 succeeded. → `flutter-soul-stewardship` is the real lever — not rule-file scaffolding, but strong agent identity.
 
 **We don't ship "best practices." We ship scar tissue.**
 
@@ -158,5 +165,5 @@ These skills are open-source and free to use, modify, and distribute. Attributio
 ---
 
 <p align="center">
-  <sub>Built with battle scars. Governed by constitution. Verified on device.</sub>
+  <sub>Built with battle scars. Verified on device. Every number generated, not remembered.</sub>
 </p>

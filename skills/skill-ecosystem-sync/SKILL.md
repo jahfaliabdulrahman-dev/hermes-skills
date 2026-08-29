@@ -1,6 +1,6 @@
 ---
 name: skill-ecosystem-sync
-description: Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to all 10 Flutter swarm profiles. This is the ONE skill to load before any "update skills" task. Captured from the 2026-07-18 marathon session.
+description: Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, worker profiles), audit modified bundled skills, install missing skills from external repos, and sync to all 10 Flutter worker profiles. This is the ONE skill to load before any "update skills" task. Captured from the 2026-07-18 marathon session.
 version: 1.2.0
 author: Sulaiman
 tags: [skills, update, devops, npx, clawhub, hermes, profiles, sync, maintenance]
@@ -75,7 +75,7 @@ for skill in flutter-android-build-system flutter-design-anti-patterns \
   flutter-isar-clean-arch-setup flutter-lessons-patterns flutter-patterns \
   flutter-soul-stewardship github-project-audit repo-front-door \
   specification-writing supabase-fullstack skill-ecosystem-sync \
-  swarm-executive-controller; do
+  flutter-sdk-changelog; do
   
   # Find actual path (skills may be in subdirectories)
   src=$(find ~/.hermes/skills -maxdepth 3 -type d -name "$skill" -exec test -f {}/SKILL.md \; -print | head -1)
@@ -175,9 +175,9 @@ See `references/2026-07-18-skill-audit-findings.md` for the full 8-skill audit r
 
 ---
 
-## Phase 4: Profile Swarm Sync
+## Phase 4: Worker Profile Sync
 
-After updating default profile, sync ALL 10 Flutter swarm profiles:
+After updating default profile, sync ALL 10 Flutter worker profiles:
 
 ```bash
 KEY_SKILLS="flutter-android-build-system flutter-design-anti-patterns \
@@ -252,7 +252,7 @@ hermes skills publish <path> --to clawhub
 | ClawHub/Hermes hub | ~8 | `hermes skills check && hermes skills update` |
 | Hermes built-in/bundled | ~40 | `hermes update` |
 | Total default profile | ~89 | — |
-| Each swarm profile | ~89 | symlinked from default |
+| Each worker profile | ~89 | symlinked from default |
 
 ---
 
@@ -268,7 +268,7 @@ hermes skills publish <path> --to clawhub
 - **PITFALL 8: `find -type d` misses symlinked skills.** `flutter-design-anti-patterns` and `supabase-fullstack` live as symlinks → `~/.agents/skills/<name>`. Use `find -L` or `ls -la ~/.hermes/skills/` to spot them; rsync from the symlink TARGET.
 - **PITFALL 9: `hermes skills check` reports stale `update_available`.** After `hermes skills update <name>` the flag can persist even when content is current. Verify against the official source: `curl -sL https://raw.githubusercontent.com/NousResearch/hermes-agent/main/optional-skills/<path>/SKILL.md | diff - <local>` (path from `hermes skills inspect <name>` or the index cache). Zero diff = flag is stale, ignore.
 - **PITFALL 10: nested skills block the hub updater.** `adversarial-ux-test` sits under `dogfood/` which is BOTH a skill dir (has SKILL.md) and a category — the installer refuses ("Refusing to install into 'dogfood'"). Apply the update manually: fetch SKILL.md from the raw GitHub path above and `cp` it over the local file. Verify with diff.
-- **PITFALL 11: published count drifts.** Repo now exposes 12 skills (swarm-executive-controller joined). Re-run `npx skills add jahfaliabdulrahman-dev/hermes-skills -l` to list; don't trust the count in this doc.
+- **PITFALL 11: published count drifts.** Skill directories in the repo and rows in the README index diverge whenever one is edited without the other. Re-run `npx skills add jahfaliabdulrahman-dev/hermes-skills -l` to list; don't trust the count in this doc.
 - **PITFALL 12: marketing repo count drifts.** coreyhaines31/marketingskills is at 49; 4 skills (ads, attribution, influencer-marketing, prospecting) were missing locally as of 2026-08-08. Install any that `comm -23` reports missing; some local dirs are RENAMED (ab-testing→ab-test-setup, cro→form-cro/page-cro/popup-cro, launch→launch-strategy...) — compare by frontmatter `name:` field, not directory name.
 
 ---
@@ -282,6 +282,6 @@ This skill was created from the 2026-07-18 marathon session where we:
 4. Installed 11 marketing skills from coreyhaines31
 5. Fixed google-workspace regression (restored stock)
 6. Audited all 8 user-modified bundled skills
-7. Synced skills to all 10 swarm profiles + default
+7. Synced skills to all 10 worker profiles + default
 8. Attempted ClawHub publishing (CLI not supported)
 9. Added bidirectional GitHub sync (local → repo → push) in v1.1.0

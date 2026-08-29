@@ -318,7 +318,7 @@ final total = _splits.fold<int>(
 - Every new project MUST feed its programming lessons here — no more per-project lesson silos
 - Patterns that become obsolete should be marked `[SUPERSEDED]` with reference to the replacing pattern
 - Source every pattern with the project and lesson ID it came from
-- Non-programming lessons (governance, process, swarm) → save to `~/.hermes/swarm/00_governance_lessons.md`
+- Non-code lessons (process, coordination) → save to the shared process-lessons file kept outside the project
 | HERMEX-007 lessons (LL-041 through LL-046) recorded by flutter-documentation-steward as the final kanban task of each EPIC — this file is the single source of truth for all cross-project Flutter lessons
 
 ## Pattern 36 — Ephemeral Message Lifecycle: Track Id, Remove, Replace

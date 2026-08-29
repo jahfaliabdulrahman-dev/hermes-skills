@@ -5,7 +5,7 @@
 
 ## The Problem
 
-Flutter swarm profiles are **cross-project** — the same profile serves CarSah, Azdal, Hermex, and future projects. When project-specific paths (e.g., `Azdal: /Users/.../Azdal`) are stored in profile MEMORY.md, the profile is poisoned.
+Flutter worker profiles are **cross-project** — the same profile serves CarSah, Azdal, Hermex, and future projects. When project-specific paths (e.g., `Azdal: /Users/.../Azdal`) are stored in profile MEMORY.md, the profile is poisoned.
 
 ### Incident chain
 
