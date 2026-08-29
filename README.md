@@ -1,7 +1,7 @@
 # Hermes Skills — Production-Grade Agent Skills for Flutter, DevOps & AI Governance
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Skills](https://img.shields.io/badge/skills.sh-11%20skills-6366f1)](https://skills.sh)
+[![Skills](https://img.shields.io/badge/skills.sh-12%20skills-6366f1)](https://skills.sh)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ea4aaa.svg)](https://github.com/sponsors/jahfaliabdulrahman-dev)
 
 **A curated collection of battle-tested agent skills forged in production Flutter projects (CarSah, Hermex Android, Azdal). Every pattern, pitfall, and protocol earned through real debugging sessions — 48 documented patterns and counting.**
@@ -27,6 +27,7 @@
 | [`flutter-isar-testing`](skills/flutter-isar-testing/SKILL.md) | In-memory Isar testing setup (real Isar DB under `flutter test`) — `libisar.dylib` symlink, `openTestIsar()`, and the **STOP-28 corrected rule: `runAsync` wraps the WAITING only, never `pump`/`tap`** (the ambiguous wording that hung Linux CI for 10 min and spread to 13 files). ⚠️ **SELF-BUILT skill** — no official flutter.dev/isar.dev equivalent exists; review before trusting | 7 KB |
 | [`flutter-lessons-patterns`](skills/flutter-lessons-patterns/SKILL.md) | Cross-project Flutter patterns from CarSah + Hermex Android + Azdal — 48 documented patterns (up from 45), now including Azdal Stage-4 cross-project lessons (LL-009/010/011) | 120 KB |
 | [`flutter-patterns`](skills/flutter-patterns/SKILL.md) | Class-level Flutter patterns — ANR debugging (Signal 3/SIGQUIT), dialog transient file lifecycle, Flutter text field clipping, widget wrapping anti-patterns | 22 KB |
+| [`flutter-sdk-changelog`](skills/flutter-sdk-changelog/SKILL.md) | Flutter version facts an LLM cannot hold in weights: the Flutter↔Dart matrix (25 stable minors), 217 live `@Deprecated` members with replacements, `environment:` floors per language feature, and legacy-upgrade runbooks. **Nothing is hand-typed** — `scripts/build_flutter_sdk_changelog.py` regenerates every number from Google's release index + the `flutter/flutter` stable tree, and `scripts/check_freshness.py` exits 1 the day stable moves ahead of the docs | 68 KB |
 
 ### Repository & DevOps
 
@@ -83,6 +84,7 @@ npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-android-buil
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-design-anti-patterns
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-lessons-patterns
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-patterns
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-sdk-changelog
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill repo-front-door
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill supabase-fullstack
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill github-project-audit
@@ -98,6 +100,7 @@ Every skill in this repository was born from a production failure that became a 
 - **LL-010 (Live-Device Verification):** 5 critical bugs found on real device AFTER `flutter analyze` clean + 34/34 tests passing + 2 AI auditors signing APPROVE. → `flutter-lessons-patterns` now enforces live-device verification as the final gate before any DONE declaration.
 - **LL-024 (ClassNotFoundException):** `namespace` in `build.gradle.kts` didn't match `MainActivity.kt` package. → `flutter-android-build-system` now gates every build with 5 preflight checks.
 - **LL-011 (Disabled Button Colors):** Material silently substitutes its default palette when `onPressed: null` — custom colors lost without error. → Same skill now enforces explicit `disabledBackgroundColor`/`disabledForegroundColor`.
+- **The cutoff-bridge with its own cutoff:** an upstream skill sold as "bridging the AI training cutoff" shipped a Flutter matrix that stopped at *3.27 / 3.29* — 6 stable minors and ~18 months behind — plus two wrong Dart mappings, because its CI validated frontmatter, link targets and prose style but never a single version number. → `flutter-sdk-changelog` generates every number from Google's release index and the `flutter/flutter` stable tree, and ships a freshness gate that exits 1 the day stable moves ahead (proven with 5 tamper tests, not just a green run).
 - **SOUL Quality Conundrum:** EPIC-001 failed in 27 minutes because 2-3 line SOUL.md files gave agents no identity. After rewriting SOULs to 150-581 lines, EPIC-002 succeeded. → `flutter-soul-stewardship` is the real governance — not constitutional courts, but strong agent identity.
 
 **We don't ship "best practices." We ship scar tissue.**
@@ -147,7 +150,7 @@ These skills are open-source and free to use, modify, and distribute. Attributio
 
 ## Author
 
-**Eng. Abdulrahman Jahfali** — 17 years in energy sector operations, AI/Flutter architect, swarm governance researcher.
+**Eng. Abdulrahman Jahfali** — energy-sector operations engineer turned AI/Flutter architect. Every skill here was forged in real battles: production apps, real devices, and agents held to evidence instead of promises.
 
 - GitHub: [@jahfaliabdulrahman-dev](https://github.com/jahfaliabdulrahman-dev)
 - Projects: CarSah, Hermex Android, Azdal, RQS V3.1, Kronos
