@@ -1,5 +1,6 @@
 ---
 name: github-project-audit
+version: 1.0.0
 description: Deep evaluation of a GitHub repository — structure, security, licensing, maintenance signals, and hype-vs-substance analysis.
 category: research
 ---
@@ -158,6 +159,16 @@ When the user asks "compare against what we have," benchmark the third-party rep
 
 Table template and real example in `references/comparison-audit-template.md`.
 
+### Layer 11 — Dev-Tool Claims Verification (Oracle Test)
+
+When a dev tool claims accuracy ("retrieves any function", "detects dead code"), do not take README numbers at face value — and do not rely on the tool's own eval corpus alone. Run a mini-oracle on the user's OWN code before adoption:
+
+1. Build ground truth cheaply with the language's own tooling: Python `ast` module (~20 lines), Dart `dart analyze` + a quick AST pass, TS `ts-morph`. A few hundred symbols is enough.
+2. Run the tool on the same code; compute precision/recall/F1 (tp/fp/fn against your oracle).
+3. Compare against the dumb baseline the tool claims to beat (usually grep). Graph-vs-grep is a fair headline — but check the comparison isn't rigged: exact-name matching vs substring search inflates precision trivially.
+4. Judge the tool's own evals for honesty: do they publish oracles, baselines, and raw tp/fp/fn? (Battle-tested 2026-08-22: code-graph-rag publishes oracle evals — 0.91 F1 graph retrieval vs 0.38 grep — that transparency was the deciding trust signal.)
+5. Adopt only if it beats grep/language tooling on YOUR code by a margin that matters for the workflow. Otherwise the verdict comes free from the oracle, no live install needed.
+
 ## Pitfalls
 - **Skills.sh ecosystem:** See `references/skills-ecosystem-audit.md` for the full methodology on auditing skills published on skills.sh. Key trap: short URLs like `/s/<name>` can return HTTP 200 for non-existent skills because Next.js renders a shell page. Always cross-reference the sitemap and verify GitHub source.
 - High star count ≠ quality (viral drops can hit 100K+ stars in days)
@@ -173,5 +184,5 @@ Table template and real example in `references/comparison-audit-template.md`.
 - When API tools are unavailable, use terminal with curl, saving to temp files before processing
 - **AI skills repos: see `references/ai-skills-ecosystem-audit.md`** — Claude/Cursor/Codex marketplace repos are predominantly markdown, not software. File-type composition is the #1 signal.
 - **Single-dominant-contributor (>70% commits) = solo project** regardless of listed contributor count. Check distribution, not headline numbers.
-- **Confounding variable trap (self-auditing):** When auditing your OWN skills/repos before publishing, the #1 failure is attributing success to the wrong variable. Example: a shared-rules skill claimed its rule-file scaffolding improved EPIC completion — but zero profiles ever loaded it, zero cron jobs ran, and SOUL rewrites (2→581 lines) happened simultaneously. Always verify: did the thing we CLAIM fixed it actually get USED? Timeline match? Simultaneous changes that better explain the outcome?
+- **Confounding variable trap (self-auditing):** When auditing your OWN skills/repos before publishing, the #1 failure is attributing success to the wrong variable. Example: a governance skill claimed constitutional scaffolding improved EPIC completion — but zero profiles ever loaded it, zero cron jobs ran, and SOUL rewrites (2→581 lines) happened simultaneously. Always verify: did the thing we CLAIM fixed it actually get USED? Timeline match? Simultaneous changes that better explain the outcome?
 - **Skills ecosystem repos are predominantly markdown:** Claude/Cursor/Codex marketplace repos can have 9,500+ entries that are just SKILL.md files. File-type composition is the #1 signal. Check for actual code, scripts, and references — not just markdown wrappers. Skills.sh short URLs like `/s/<name>` can return HTTP 200 for non-existent skills (Next.js renders a shell page) — always cross-reference sitemaps.

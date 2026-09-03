@@ -1,5 +1,6 @@
 ---
 name: flutter-ios-build-system
+version: 1.0.0
 category: flutter
 description: Complete Flutter iOS build system knowledge — Xcode, signing, TestFlight, App Store Connect. Built from the OFFICIAL flutter.dev deployment guide (docs.flutter.dev/deployment/ios, updated 2026-07-31) + verified live pitfalls from CarSah's first iOS build (2026-08-13).
 triggers:

@@ -1,7 +1,7 @@
 ---
 name: skill-ecosystem-sync
 description: Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to every Flutter swarm profile plus default. This is the ONE skill to load before any "update skills" task.
-version: 1.2.1
+version: 1.2.2
 author: Sulaiman
 tags: [skills, update, devops, npx, clawhub, hermes, profiles, sync, maintenance]
 ---
@@ -84,15 +84,13 @@ that fails this gate, or the contamination ships publicly.
 ```bash
 cd /tmp/hermes-skills
 
-# 1. Sync all published skills FROM local → repo (derive the list: npx skills add jahfaliabdulrahman-dev/hermes-skills -l)
-for skill in flutter-android-build-system flutter-design-anti-patterns \
-  flutter-isar-clean-arch-setup flutter-lessons-patterns flutter-patterns \
-  flutter-soul-stewardship github-project-audit repo-front-door \
-  specification-writing supabase-fullstack skill-ecosystem-sync \
-  swarm-executive-controller; do
+# 1. Sync all published skills FROM local → repo.
+# The published set is DERIVED from the repo itself (the repo listing is the source of truth —
+# it has grown repeatedly and any hardcoded list goes stale within one cycle, PITFALL 11):
+for skill in $(git -C /tmp/hermes-skills ls-tree --name-only HEAD:skills/); do
   
   # Find actual path (skills may be in subdirectories)
-  src=$(find ~/.hermes/skills -maxdepth 3 -type d -name "$skill" -exec test -f {}/SKILL.md \; -print | head -1)
+  src=$(find -L ~/.hermes/skills -maxdepth 4 -type d -name "$skill" -exec test -f {}/SKILL.md \; -print | head -1)  # -L: follow symlinks (PITFALL 8)
   if [ -n "$src" ] && [ -f "$src/SKILL.md" ]; then
     rsync -a "$src/" /tmp/hermes-skills/skills/$skill/
   fi

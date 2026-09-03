@@ -1,5 +1,6 @@
 ---
 name: flutter-sdk-changelog
+version: 1.0.0
 description: >-
   Use when you need a Flutter version fact: which Dart SDK ships with a Flutter release, what the correct
   `environment:` bounds are for a language feature, what replaced a deprecated widget or property, what changed

@@ -1,7 +1,7 @@
 ---
 name: flutter-lessons-patterns
 description: Cross-project Flutter patterns distilled from CarSah + Hermex_Android + Azdal — 54 programming patterns, each classified GATE/RULE/JUDGMENT + RFC 2119 negation (MUST/SHOULD/MAY), plus missing-gate detection lenses. Single source of truth for all Flutter/Dart/Android coding lessons. Load before every implementation task. Full bodies live in references/ (split 2026-08-22 for size).
-version: 2.25.0
+version: 2.25.1
 triggers:
   - Starting any Flutter implementation task
   - Creating a new BL (backlog item) or Kanban card
@@ -106,6 +106,7 @@ Every pattern is classified by two exclusion filters then a weighted score:
 | 52 | Repeated CI Failures Are a Forensic Investigation, Not a Push Race (LL-055) | patterns-45-54-stage4-design-meta |
 | 53 | One Attempt Is Half the Truth: Open Every Attempt Before Claiming Attribution (LL-056) | patterns-45-54-stage4-design-meta |
 | 54 | The Linter's Suggestion Is Not Always the Fix: Conflicting Analyzers (LL-057) | patterns-45-54-stage4-design-meta |
+| 55 | Process & Governance Patterns: Phased QA, EPIC Gates, Evidence Discipline (multi-project post-mortems) | process-governance-patterns |
 
 > **Note on numbering:** the reference files keep their original `## Pattern N` headings (the extraction was mechanical — content is identical to v2.24). The index above is for navigation; the **real mapping is Pattern N → reference file**, not the index row numbers.
 

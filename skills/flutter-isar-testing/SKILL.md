@@ -1,5 +1,6 @@
 ---
 name: flutter-isar-testing
+version: 1.0.0
 category: software-development
 description: In-memory Isar testing setup for Flutter — unit tests with real Isar DB on macOS
 metadata:
@@ -161,6 +162,9 @@ Options:
 - If the widget shows an infinite loading spinner by design, never `pumpAndSettle` while it is visible — use `await tester.pump(const Duration(...))` with explicit steps.
 - Isar is REAL async; its futures do not resolve as the fake clock advances. For widgets that touch Isar: override the repository/use-case (inject fakes/Riverpod overrides) OR test with real-async patterns.
 - **⚠️ STOP-28 correction (2026-08-11, LL-053):** the previous wording "test with real-async patterns (`tester.runAsync`) plus `pump()` with fixed durations" was AMBIGUOUS and was read as "call pump inside runAsync" — that nesting hung Linux CI for 10 minutes (fake-clock primitives inside real-clock runAsync starve waiting for a frame the real clock never schedules). It propagated to 13 files (44 sites). **The correct rule: `runAsync` wraps the WAITING only — NEVER `pumpWidget`/`pump`/`tap` inside it.** The safe shape is `settleReal` from `test/helpers/pump.dart` (runAsync wraps only the waiting, never a pump), and `test/structure/test_harness_policy_test.dart` fails on any NEW nesting. When a test passes locally but hangs CI on Linux — suspect this pattern first, not the scheduler.
+- **`until:` must be DATA-DEPENDENT, never chrome (2026-08-11, paid-debt round).** The AppBar title of the destination screen renders before its providers' Isar reads land. Waiting on the title returns early → the assertions fail AND teardown's `isar.close()` can hang on in-flight queries. Correct conditions, in order of strength: (a) single-provider screen → the first data text inside the body (`'وش هي بالضبط؟'` on TaskRecord); (b) multi-provider screen → `find.byType(CircularProgressIndicator).evaluate().isEmpty && <screen title>`; (c) full-app splash redirect → no spinner AND the seeded hero data (`'Toyota Camry'`), never the dashboard AppBar title.
+- **Teardown hang class: trailing real async blocks `isar.close()`.** After a test that triggers a real write chain (TX + storage + provider invalidations), the app's tail may leave the Isar isolate busy; `addTearDown(() => isar.close(...))` then hangs forever (not caught by `--timeout`, which only covers the test body). Fix: before the test ends, `await tester.settleReal(cycles: 40, step: const Duration(milliseconds: 10));` — real event-loop turns deliver the pending response, the fake-frame pump flushes its continuation. A drain query alone (`runAsync(findFirst)`) does NOT fix it; unmounting the tree does NOT fix it; the settleReal alternation does.
+- **Route/sheet exit animations need fake-clock frames.** After `Navigator.pop` (sheet close, dialog close, route fallback), assert the destination by waiting `settleReal(until: <the thing gone or the next screen's data>)` — a single bare `pump()` advances the fake clock by zero and the old screen is still in the tree.
 - Diagnose before patching: probe whether the async layer resolves under FakeAsync at all (a quick `tester.runAsync` experiment) — throwing a different pump strategy blindly just moves the timeout.
 
 ## Integration Tests (Device-Based)

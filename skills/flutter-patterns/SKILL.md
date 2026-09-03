@@ -1,5 +1,6 @@
 ---
 name: flutter-patterns
+version: 1.0.0
 description: "Class-level Flutter patterns: ANR debugging, dialog localization, input hardening, widget wrapping, CI drift, image lifecycle, GoRouter routing. Covers general Flutter UI/UX, platform-integration, and navigation patterns that aren't Isar-specific. For Isar-specific Flutter patterns, see flutter-isar-clean-arch-setup."
 tags: [flutter, patterns, anr, localization, input, widgets, ui, platform, genui, a2ui, gorouter, routing]
 ---
