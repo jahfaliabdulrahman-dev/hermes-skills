@@ -1,44 +1,43 @@
 ---
 name: mcp-bridge-patterns
-description: Build MCP stdio bridges that connect an external LLM client (Claude Desktop, Kimi, any MCP host) to an agent runtime over HTTP. Zero-dependency server template, non-blocking dispatch with file persistence, and the PATH/environment traps that make subprocess-based bridges fail in production.
-sources:
-  - https://modelcontextprotocol.io/docs/concepts/transports (stdio transport + limited environment inheritance)
-  - Production bridge shipped as a Claude Desktop .mcpb extension (2026-07-19) — every pitfall below was paid for in a real failure
+description: Zero-dependency MCP stdio server patterns — non-blocking dispatch, manifest desync fixes, shell-vs-LLM verification. For building MCP bridges that connect external LLM clients (Claude Desktop, Kimi) to Hermes Agent.
+version: 1.0.0
+author: Sulaiman (agent-authored)
+metadata:
+  hermes:
+    tags: [MCP, stdio, architecture, non-blocking, claude-desktop, hermes]
 ---
 
 # MCP Bridge Patterns
 
-Patterns for a bridge process that speaks **MCP stdio** to an LLM client on one side and **HTTP** to an
-agent runtime on the other. Written after shipping one and breaking it several times.
+Recurring patterns for building MCP servers that bridge Claude Desktop to Hermes Agent. **v2.0: HTTP Bridge replaces subprocess spawning.**
 
 ## When to Use
 
-- Building an MCP bridge in Node.js with the stdio transport
-- Debugging `MCP error -32001`, `socket hang up`, or a tool that hangs the host UI
-- A bridge that works in your shell but fails inside the LLM client
-- Long-running agent work that must not block the client's tool call
+- Building a new MCP bridge (Node.js, stdio transport)
+- Debugging "MCP error -32001" or `socket hang up` from Hermes Gateway API
+- Adding tools to an existing MCP server
+- Routing tasks to Kanban boards based on project path
 
 ---
 
-## Pattern 1: HTTP, never a subprocess
+## Pattern 1: HTTP Bridge (v2.0)
 
-**Problem:** `spawn("<agent-cli> chat -q ...")` looks obvious and fails in production. MCP stdio servers
-inherit only a **limited subset** of the environment, so your CLI is usually not on `PATH` at all — and even
-when it is, process startup dominates latency.
+**Problem:** `spawn("hermes chat -q")` is slow, fragile, and fails in Claude Desktop because **MCP stdio servers inherit a limited subset of PATH**. `hermes` binary is not available.
 
-**Solution:** POST to the runtime's HTTP API. No subprocess anywhere in the hot path.
+**Solution:** HTTP POST to Hermes Gateway API. Zero subprocess. Retry logic handles transient failures.
 
 ```javascript
-function agentApi(messages, profile, timeoutMs, retries = 2) {
+function hermesApi(messages, profile, timeoutMs, retries = 2) {
   return new Promise((resolve, reject) => {
     const attempt = (n) => {
       const req = request(`${API_URL}/v1/chat/completions`, {
         method: "POST",
         headers: { "Authorization": `Bearer ${API_KEY}`, "Content-Type": "application/json" },
         timeout: timeoutMs,
-      }, (res) => { /* accumulate, parse, resolve */ });
+      }, (res) => { /* accumulate data, parse, resolve */ });
       req.on("error", (e) => {
-        if (n > 0 && isTransient(e)) setTimeout(() => attempt(n - 1), backoff(n));
+        if (n > 0 && isTransient(e)) setTimeout(() => attempt(n-1), backoff(n));
         else reject(e);
       });
       req.write(body); req.end();
@@ -48,80 +47,69 @@ function agentApi(messages, profile, timeoutMs, retries = 2) {
 }
 ```
 
-**Retry only transients:** `socket hang up`, `ECONNRESET`, timeout. Backoff 2s → 4s, max 3 attempts.
-Retrying a 4xx just multiplies a bad request.
+**Retry:** Only `socket hang up`, `ECONNRESET`, timeout. Backoff 2s→4s. Max 3 attempts.
 
-**Credentials:** read the API key from the runtime's env file **once at startup**, then set the
-`Authorization` header on every request. Never inline a key in the manifest — clients ship manifests around.
+**API key source:** Read from the Hermes environment file at server startup. Set the `Authorization` header on every request.
 
 ---
 
-## Pattern 2: Non-blocking dispatch with file persistence
+## Pattern 2: Non-blocking Dispatch with File Persistence
 
-Any tool whose work can exceed a few seconds must return a `task_id` immediately and let the client poll a
-`task_status` tool. A blocking tool call freezes the host UI and eventually times out on the client side,
-which is indistinguishable from a crash to the user.
+All tools (`quick_task`, `lead_delegate`, kanban views) should be non-blocking. Return `task_id` immediately. Background HTTP requests persist state to disk. Client polls via `lead_task_status`.
 
-Make the dispatcher:
-- **persist to disk** — the bridge is restarted by the client at will; in-memory state is a lie
-- **dedup by content hash** — the same request re-sent gets the same `task_id` instead of a second run
-- **cap concurrency** (2 is a sane default) and **auto-clean** finished records after ~1h
+Key features: file persistence (survives restarts), content-hash dedup (duplicate EPICs get same ID), max 2 concurrent, auto-cleanup after 1h.
 
 ---
 
-## Pattern 3: Two ID namespaces in one status tool
+## Pattern 3: Kanban-Aware lead_task_status
 
-A status tool usually has to resolve more than one kind of identifier:
+`lead_task_status` accepts two ID formats:
 
-| ID shape | Origin | Resolution |
-| --- | --- | --- |
-| `task-…` | dispatched by this bridge | local file persistence |
-| `t_…` | a work item in the runtime's own board/queue | HTTP API — **never** `exec()` |
+| ID | Source | Resolution |
+|----|--------|-----------|
+| `task-xxx` | bridge dispatch | File persistence |
+| `t_xxx` | Kanban card | HTTP API to Lead Architect profile — NEVER `exec()` |
 
-Detect the shape, then resolve. Do not make the client remember which tool to call.
+**Never use `exec()`** to query Kanban. MCP servers don't inherit the user's PATH. Always route through the Gateway API with the Lead Architect profile.
 
 ---
 
-## Pattern 4: Route by explicit workspace path
+## Pattern 4: Board Routing via project_path
 
-If the runtime keeps separate boards/queues per project, map an explicit `project_path` argument to the
-target, and inject it into the request:
+Map `project_path` to board slug. Inject into Lead Architect prompt:
 
 ```javascript
-const boardMap = { "/abs/path/project-one": "project-one", "/abs/path/project-two": "project-two" };
+const boardMap = { "Azdal": "azdal", "CarSah": "carsah" }; // key = project folder basename
 const board = boardMap[projectPath] || "default";
 ```
 
-## Pattern 5: Make `project_path` mandatory
-
-A delegation tool must **require** the workspace path and validate it with `fs.existsSync()`. No path → hard
-refusal. This single rule kills the most expensive failure class in bridge operation: work dispatched to the
-wrong project because the model inferred the target from stale context instead of being told.
+Boards created with `hermes kanban boards create <slug>`. Isolated per-project history.
 
 ---
 
-## Pattern 6: The environment trap, stated plainly
+## Pattern 5: project_path Enforcement
 
-Per the MCP spec, stdio servers inherit a limited subset of environment variables. Therefore:
-`exec()`, `spawn()`, and anything that resolves a binary from `PATH` are all unreliable inside the bridge.
-Route every capability through the HTTP API, which runs in the full user environment.
+`lead_delegate` MUST require `project_path`. Validate with `fs.existsSync()`. No path → hard refusal. Prevents the #1 contamination class: EPICs routed to wrong project via stale memory.
 
 ---
 
-## Zero-dependency server
+## Pattern 6: MCP PATH Limitations
 
-Bridges are shipped as client extensions, and the host's bundled Node runtime does **not** include the MCP
-SDK. Implementing the protocol by hand is ~30 lines and produces a ~5KB artifact that cannot fail on a
-missing native module. The complete template, plus the packaging notes, lives in
-[`references/zero-dependency-server-template.md`](references/zero-dependency-server-template.md).
+Per MCP spec: stdio servers inherit a **limited subset** of environment variables. Never use `exec()`, `spawn()`, or any subprocess that depends on the user's PATH. Route everything through the Gateway API — it runs in the full user environment.
+
+---
+
+## Zero-Dependency MCP Server Boilerplate (Node.js)
 
 ```javascript
 #!/usr/bin/env node
-// stdio JSON-RPC — no dependencies
+import { spawn, exec } from "child_process";
+
+// Stdio JSON-RPC transport
 process.stdin.on("data", data => {
   for (const line of data.toString().trim().split("\n")) {
     if (!line) continue;
-    try { handleMessage(JSON.parse(line)); } catch (e) { /* log to stderr, never stdout */ }
+    try { handleMessage(JSON.parse(line)); } catch(e) { /* log to stderr */ }
   }
 });
 
@@ -132,23 +120,22 @@ function handleMessage(msg) {
     send({ jsonrpc: "2.0", id: msg.id, result: {
       protocolVersion: "2024-11-05",
       capabilities: { tools: {} },
-      serverInfo: { name: "bridge", version: "1.0.0" },
+      serverInfo: { name: "...", version: "1.0.0" }
     }});
   } else if (msg.method === "tools/list") {
-    send({ jsonrpc: "2.0", id: msg.id, result: { tools: [ /* … */ ] }});
+    send({ jsonrpc: "2.0", id: msg.id, result: { tools: [...] }});
   } else if (msg.method === "tools/call") {
     runTool(msg.params.name, msg.params.arguments)
       .then(r => send({ jsonrpc: "2.0", id: msg.id, result: r }))
-      .catch(e => send({ jsonrpc: "2.0", id: msg.id, result: {
-        content: [{ type: "text", text: e.message }], isError: true }}));
+      .catch(e => send({ jsonrpc: "2.0", id: msg.id, result: { content: [{ type: "text", text: e.message }], isError: true }}));
   }
 }
 
-setTimeout(() => {}, 86400000); // an MCP stdio server must never exit on its own
+// Keep process alive (MCP stdio server must never exit)
+setTimeout(() => {}, 86400000);
 ```
 
-`package.json` needs `{ "type": "module", "main": "server/index.js" }`.
-
-**stdout is the protocol channel.** Every log line, warning, or stray `console.log` corrupts the JSON-RPC
-stream — send diagnostics to stderr only. This is the single most common cause of a bridge that "connects
-and then dies".
+**package.json requirements:**
+```json
+{ "type": "module", "main": "server/index.js" }
+```

@@ -1,7 +1,7 @@
 ---
 name: flutter-soul-stewardship
 description: Exact procedure for the Lead Architect to update SOUL.md files across all Flutter profiles. Use when the Lead Architect needs to add, modify, or remove sections in any Flutter profile's SOUL.md or config.yaml system_prompt. Eliminates trial-and-error — every step is deterministic.
-version: 1.0.0
+version: 1.0.1
 metadata:
   hermes:
     tags: [flutter, soul, profiles, stewardship, lead-architect, orchestration]
@@ -9,8 +9,9 @@ metadata:
 
 # Flutter Soul Stewardship
 
-How the Lead Architect updates SOUL.md files for all 10 Flutter profiles.
-Zero guesswork. Zero silent failures. Every step verified.
+How the Lead Architect updates SOUL.md files for every Flutter swarm profile.
+Zero guesswork. Zero silent failures. Every step verified. Derive the live
+profile list with `ls ~/.hermes/profiles/` — never trust a memorized count.
 
 ### 11.4 Target Profiles
 
@@ -27,18 +28,29 @@ Zero guesswork. Zero silent failures. Every step verified.
 ~/.hermes/profiles/flutter-curiosity-hunter/SOUL.md
 ```
 
-**Cross-profile rule files:** keep shared rules and process lessons in ONE file outside the profiles
-and symlink it into each profile. Edit the source file only — never the per-profile copies. (Read the
-confound section at the end before you invest in this scaffolding at all.)
+**Governance files (symlinked, NOT profile-local):**
+```
+~/.hermes/swarm/constitution.yaml          ← Single source of truth
+~/.hermes/swarm/00_governance_lessons.md   ← Governance lessons (GL-NNN)
+~/.hermes/profiles/flutter-*/constitution.yaml        → symlink to swarm/
+~/.hermes/profiles/flutter-*/00_governance_lessons.md → symlink to swarm/
+```
 
 Each profile also has its SOUL embedded in:
 ```
 ~/.hermes/profiles/<name>/config.yaml → agent.system_prompt
 ```
 
-## The Two-Target Rule
+## The Three-Target Rule (Governance Constitution)
 
-TWO files per profile may need updates (the shared rule files are edited at the source, not per profile):
+Since the Swarm Governance Constitution was deployed, THREE files per profile may need updates:
+
+| File | Contains | When to update |
+|------|----------|----------------|
+| `SOUL.md` | The canonical soul document | ALWAYS — source of truth |
+| `constitution.yaml` | **SYMLINK** to `~/.hermes/swarm/constitution.yaml` | Edit the SOURCE file at `~/.hermes/swarm/constitution.yaml` — NEVER edit individual profile copies. Symlinks auto-propagate changes. |
+| `00_governance_lessons.md` | **SYMLINK** to `~/.hermes/swarm/00_governance_lessons.md` | Append governance lessons (GL-NNN) to the source file. All profiles inherit automatically. |
+| `config.yaml` (`agent.system_prompt`) | SOUL injected as system prompt | Only if SOUL content was previously embedded there |
 
 | File | Contains | When to update |
 |------|----------|----------------|
@@ -229,11 +241,11 @@ Before modifying any bundled skill, diff it against stock and verify your change
 
 **Rule:** Run `hermes skills diff <name>` BEFORE editing. If the only changes are personal preferences, don't modify. If the skill genuinely needs customization, add without deleting stock content.
 
-## The Confound — SOUL Quality Beat the Shared Rule Files
+## Governance Confound — SOUL Quality > Constitutional Scaffolding
 
-**Discovered:** 2026-07-18 — internal multi-agent audit
+**Discovered:** 2026-07-18 — Hermes swarm governance audit
 
-**Insight:** The audit revealed the shared rule file was symlinked into all 10 profiles but had ZERO active uses: no cron jobs, no enforcement, no profile ever loaded the skill. The REAL difference between EPIC-001 (failure) and t_65c0f769 (success): SOUL files grew from 2-3 lines to 91-581 lines during the same period. Before attributing multi-agent performance to any rule mechanism, verify the SOUL baseline — a strong SOUL does more than any rule file.
+**Insight:** A swarm-governance audit revealed the constitution.yaml was symlinked to every profile but had ZERO active uses: no cron jobs, no enforcement, no profile ever loaded the skill. The REAL difference between EPIC-001 (failure) and t_65c0f769 (success): SOUL files grew from 2-3 lines to 91-581 lines during the same period. Before attributing multi-agent performance to any governance mechanism, verify the SOUL baseline — a strong SOUL does more than any constitution.
 
 ## Quick Reference: What Each Profile Owns
 

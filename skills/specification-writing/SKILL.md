@@ -2,7 +2,7 @@
 name: specification-writing
 description: Write and maintain product specification files following the AI-Agent App Build Specification Pack framework. Covers the 24-file, 6-stage sequential structure (00–24), mandatory file header template with Cross-Reference traceability, depth requirements (incl. dependency-health rule for library adoption decisions), and the NO PROCEDURAL REDUCTION rule. Use when creating or updating any app-spec file, writing PRDs, design systems, user flows, monetization specs, risk registers, financial models.
 tags: [specification, prd, product-discovery, design-system, user-flows, monetization, risks, financial-model, documentation, zero-trust, dependency-health]
-version: "3.7.0"
+version: 3.7.1
 ---
 
 # Specification Writing
@@ -321,7 +321,7 @@ Cross-reference:
 |---|------|---------|
 | 22 | `22_admin_panel.md` | Admin dashboard, moderation tools, analytics views, role-based access |
 | 23 | `23_support_operations.md` | On-call procedures, incident response, escalation paths, FAQ maintenance |
-| 24 | `24_active_capabilities.md` | Current feature status — the accurate, living inventory of what works. **MUST include a plain-language App Completeness Checklist (§7): 20 yes/no questions a non-technical person answers by opening the app — navigation bar present, screens reachable, honesty rules visible. Checked before any release gate and after every 10 build steps (lesson 2026-08-12: 38 steps passed while the prototype-designed 3-tab navigation was never built — long spec files hide absences; a short checklist catches what long files hide).** |
+| 24 | `24_active_capabilities.md` | Current feature status — the accurate, living inventory of what works. **MUST include a plain-language App Completeness Checklist (§7): 20 yes/no questions a non-technical person answers by opening the app — navigation bar present, screens reachable, honesty rules visible. Checked before any release gate and after every 10 build steps (lesson 2026-08-12: 38 steps passed while the prototype-designed 3-tab navigation was never built — long spec files hide absences; a short checklist catches what long files hide).** Full founder-validated doctrine in `references/checklist-philosophy.md`: four checklist types with distinct owners (pre-flight / completeness / compliance / release), the three-state answer model where **N/A must cite a justifying decision or counts as NOT applied**, project checklists born at 3.5, stable item IDs, and the checklist→gate→guard triad. |
 
 ---
 
@@ -789,7 +789,7 @@ Each version bump must preserve all prior content. Only remove content when expl
 | External Source Grounding | Not defined — skills created from internal knowledge only | **Governing Rule added** — skills must ground patterns in official Flutter/Dart docs via `find-docs` (Context7) |
 | Reference file contract | Implicit only | **Explicit 3-file contract** — SKILL.md (universal) + project-landscape.md (snapshot) + authoritative-sources.md (grounding) |
 | Pitfalls | 9 pitfalls | **11 pitfalls** — added "skill content contamination" and "untethered skills" |
-| Rationale | — | User rejected 4 skills for mixing project names into SKILL.md. Pattern established: audit projects → research sources → write generic pattern → add project snapshot as reference. |
+| Rationale | — | User rejected earlier skill drafts for mixing project names into SKILL.md. Pattern established: audit projects → research sources → write generic pattern → add project snapshot as reference. |
 
 ### v3.0.0 → v3.1.0
 
@@ -912,7 +912,7 @@ When a file is modified:
 - **Manual asset resizing**: Resizing icons by hand for every density instead of using `flutter_launcher_icons` + `flutter_native_splash`. These packages should be in every project's dev_dependencies from Stage 3 onward.
 - **Uniform governance**: Applying the same strictness to all stages equally — suffocates creativity in Stage 3, loosens critical controls in Stage 4. Use the Two-Rein Rule: classify each file into Creative, Mixed, or Quality Zone before delegating.
 - **Skipping third-party review in Stage 3.5**: The founder reviewing the build plan alone creates a single point of failure. Stage 3.5 requires an independent adversarial reviewer — the founder receives their verdict but is not the sole judge.
-- **Skill content contamination**: Writing project-specific audit data (repo paths, line numbers, DEC entries, project names) into SKILL.md instead of `references/project-landscape.md`. A skill must be reusable by any project. The user rejected 4 skills on 2026-07-26 for this violation.
+- **Skill content contamination**: Writing project-specific audit data (repo paths, line numbers, DEC entries, project names) into SKILL.md instead of `references/project-landscape.md`. A skill must be reusable by any project — the user has rejected skill drafts over exactly this violation, and this pitfall exists because of it.
 - **Untethered skills**: Creating architectural patterns without grounding in official Flutter/Dart documentation. Always run `find-docs` (Context7) and save findings to `references/authoritative-sources.md`.
 - **Skipping DESIGN_GATE**: Writing code before Stage 3 is complete. This caused a real project to be rebuilt twice. Never again.
 - **Losing detail on rewrite**: When writing a file from scratch, forgetting to include depth from prior versions. Always read the prior version first and preserve its structure.
