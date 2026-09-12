@@ -1,7 +1,7 @@
 ---
 name: skill-ecosystem-sync
 description: Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to every Flutter swarm profile plus default. This is the ONE skill to load before any "update skills" task.
-version: 1.2.2
+version: 1.2.3
 author: Sulaiman
 tags: [skills, update, devops, npx, clawhub, hermes, profiles, sync, maintenance]
 ---
@@ -282,6 +282,8 @@ Most skills pass with SAFE verdict; a minority get CAUTION (historically for she
 - **PITFALL 10: nested skills block the hub updater.** `adversarial-ux-test` sits under `dogfood/` which is BOTH a skill dir (has SKILL.md) and a category — the installer refuses ("Refusing to install into 'dogfood'"). Apply the update manually: fetch SKILL.md from the raw GitHub path above and `cp` it over the local file. Verify with diff.
 - **PITFALL 11: published count drifts.** The repo's skill count has grown repeatedly (e.g. when `swarm-executive-controller` joined it became stale within one cycle). Re-run `npx skills add jahfaliabdulrahman-dev/hermes-skills -l` to list; never trust a memorized count.
 - **PITFALL 12: marketing repo count drifts.** The external marketing repo's count has repeatedly grown while local installs lagged behind (several skills were once discovered missing locally only during a sync). Install any that `comm -23` reports missing; some local dirs are RENAMED (ab-testing→ab-test-setup, cro→form-cro/page-cro/popup-cro, launch→launch-strategy...) — compare by frontmatter `name:` field, not directory name.
+- **PITFALL 13: fresh clones can carry a foreign git identity.** A `/tmp` clone inherits the machine's global git identity (which may belong to a different project), so commits get publicly misattributed the moment they're pushed. Set the identity locally in the clone BEFORE committing (`git config user.name "<repo-account>"; git config user.email "<repo-noreply-email>"`); if already committed, `git commit --amend --author="<name> <email>" --no-edit` before pushing.
+- **PITFALL 14: HTTPS pushes can die with `send-pack: unexpected disconnect while reading sideband packet`.** A retry often succeeds; if it persists, set `git config http.version HTTP/1.1` and `git config http.postBuffer 524288000` in the clone, then push again. Never trust the push output alone — confirm the remote ref (`git ls-remote origin refs/heads/main` must equal `git rev-parse HEAD`) before declaring success.
 
 ---
 
