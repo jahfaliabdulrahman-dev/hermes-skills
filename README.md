@@ -55,9 +55,9 @@ Two AI agents — an implementer and an independent auditor — review each othe
 
 <table>
 <tr>
-<td width="33%" align="center"><a href="docs/diagrams/repo-mailbox-architecture.png"><img src="docs/diagrams/repo-mailbox-architecture.png" alt="Architecture — commit-only letters exchanged through a repo mailbox"></a><br><b>Transport</b><br><sub>Who talks to what</sub></td>
-<td width="33%" align="center"><a href="docs/diagrams/repo-mailbox-loop.png"><img src="docs/diagrams/repo-mailbox-loop.png" alt="Operating loop — six stations around one shared record"></a><br><b>Cadence</b><br><sub>How work advances and state accumulates</sub></td>
-<td width="33%" align="center"><a href="docs/diagrams/repo-mailbox-sequence.png"><img src="docs/diagrams/repo-mailbox-sequence.png" alt="Sequence — one round-trip, message by message"></a><br><b>Exchange</b><br><sub>One round-trip, in order</sub></td>
+<td width="33%" align="center"><a href="https://cdn.jsdelivr.net/gh/jahfaliabdulrahman-dev/hermes-skills@main/docs/diagrams/repo-mailbox-architecture.png"><img src="https://cdn.jsdelivr.net/gh/jahfaliabdulrahman-dev/hermes-skills@main/docs/diagrams/repo-mailbox-architecture.png" alt="Architecture — commit-only letters exchanged through a repo mailbox"></a><br><b>Transport</b><br><sub>Who talks to what</sub></td>
+<td width="33%" align="center"><a href="https://cdn.jsdelivr.net/gh/jahfaliabdulrahman-dev/hermes-skills@main/docs/diagrams/repo-mailbox-loop.png"><img src="https://cdn.jsdelivr.net/gh/jahfaliabdulrahman-dev/hermes-skills@main/docs/diagrams/repo-mailbox-loop.png" alt="Operating loop — six stations around one shared record"></a><br><b>Cadence</b><br><sub>How work advances and state accumulates</sub></td>
+<td width="33%" align="center"><a href="https://cdn.jsdelivr.net/gh/jahfaliabdulrahman-dev/hermes-skills@main/docs/diagrams/repo-mailbox-sequence.png"><img src="https://cdn.jsdelivr.net/gh/jahfaliabdulrahman-dev/hermes-skills@main/docs/diagrams/repo-mailbox-sequence.png" alt="Sequence — one round-trip, message by message"></a><br><b>Exchange</b><br><sub>One round-trip, in order</sub></td>
 </tr>
 </table>
 
