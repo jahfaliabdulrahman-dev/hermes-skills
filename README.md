@@ -49,6 +49,22 @@
 
 ---
 
+## 📬 Featured: the repo-as-mailbox pattern
+
+Two AI agents — an implementer and an independent auditor — review each other's work with **no shared runtime and no API between them**. The git repo is the mailbox: every message is a commit, both sides poll a marker for changes, and state accumulates in one shared record. Full protocol: [`agent-repo-handoff-loop`](skills/agent-repo-handoff-loop/SKILL.md) — 112 KB, field-hardened.
+
+<table>
+<tr>
+<td width="33%" align="center"><a href="docs/diagrams/repo-mailbox-architecture.png"><img src="docs/diagrams/repo-mailbox-architecture.png" alt="Architecture — commit-only letters exchanged through a repo mailbox"></a><br><b>Transport</b><br><sub>Who talks to what</sub></td>
+<td width="33%" align="center"><a href="docs/diagrams/repo-mailbox-loop.png"><img src="docs/diagrams/repo-mailbox-loop.png" alt="Operating loop — six stations around one shared record"></a><br><b>Cadence</b><br><sub>How work advances and state accumulates</sub></td>
+<td width="33%" align="center"><a href="docs/diagrams/repo-mailbox-sequence.png"><img src="docs/diagrams/repo-mailbox-sequence.png" alt="Sequence — one round-trip, message by message"></a><br><b>Exchange</b><br><sub>One round-trip, in order</sub></td>
+</tr>
+</table>
+
+Each diagram also ships as `.svg` (vector) and self-contained `.html` (source) under [`docs/diagrams/`](docs/diagrams/).
+
+---
+
 ## 💎 Premium — Spec Pack Generator ($19)
 
 The skills above are **free and open-source** (Apache 2.0) — that's the framework.

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg viewBox="0 0 1000 736" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="rmseq-title rmseq-desc">
+      <title id="rmseq-title">Repo-as-mailbox — one exchange over time</title>
+      <desc id="rmseq-desc">Sequence diagram with four lifelines: implementer, repo mailbox, auditor and founder. The implementer pushes code and a SUBMIT letter; the auditor polls, reviews and pushes a verdict; the implementer polls and resumes. An optional fragment covers AWAITING_FOUNDER, where a founder decision letter wakes the loop. The ring then repeats.</desc>
+      <defs><style>@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&amp;family=Geist:wght@400;500;600&amp;family=Geist+Mono:wght@400;500;600&amp;display=swap');</style>
+        <marker id="arrow" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#4f5d75"/></marker>
+        <marker id="arrow-accent" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto"><polygon points="0 0, 8 3, 0 6" fill="#eb6c36"/></marker>
+      </defs>
+
+      <rect width="100%" height="100%" fill="#f5f5f5"/>
+
+      <!-- Lifelines -->
+      <line x1="160" y1="96" x2="160" y2="712" stroke="#2d3142" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="380" y1="96" x2="380" y2="712" stroke="#2d3142" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="600" y1="96" x2="600" y2="712" stroke="#2d3142" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+      <line x1="820" y1="96" x2="820" y2="712" stroke="#2d3142" stroke-opacity="0.20" stroke-width="1" stroke-dasharray="3,3"/>
+
+      <!-- Activation bars -->
+      <rect x="156" y="140" width="8" height="24" fill="#2d3142" fill-opacity="0.06" stroke="#4f5d75" stroke-width="0.8"/>
+      <rect x="156" y="380" width="8" height="296" fill="#2d3142" fill-opacity="0.06" stroke="#4f5d75" stroke-width="0.8"/>
+      <rect x="376" y="140" width="8" height="544" fill="#2d3142" fill-opacity="0.06" stroke="#4f5d75" stroke-width="0.8"/>
+      <rect x="596" y="188" width="8" height="160" fill="#2d3142" fill-opacity="0.06" stroke="#4f5d75" stroke-width="0.8"/>
+      <rect x="816" y="512" width="8" height="32" fill="#2d3142" fill-opacity="0.06" stroke="#4f5d75" stroke-width="0.8"/>
+
+      <!-- Combined fragment: opt AWAITING_FOUNDER -->
+      <rect x="368" y="460" width="464" height="120" rx="4" fill="#2d3142" fill-opacity="0.02" stroke="#2d3142" stroke-opacity="0.22" stroke-width="1"/>
+      <rect x="368" y="460" width="40" height="16" rx="2" fill="#f5f5f5" stroke="#2d3142" stroke-opacity="0.22" stroke-width="1"/>
+      <text x="388" y="472" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.12em">OPT</text>
+      <text x="380" y="490" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" letter-spacing="0.04em">[AWAITING_FOUNDER · both pollers quiet]</text>
+
+      <!-- Messages -->
+      <line x1="168" y1="148" x2="375" y2="148" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="595" y1="196" x2="387" y2="196" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="386" y1="244" x2="595" y2="244" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <path d="M 604 292 H 648 A 8 8 0 0 1 656 300 V 308 A 8 8 0 0 1 648 316 H 606" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="595" y1="340" x2="387" y2="340" stroke="#eb6c36" stroke-width="1.4" marker-end="url(#arrow-accent)"/>
+      <line x1="168" y1="388" x2="375" y2="388" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="376" y1="436" x2="170" y2="436" stroke="#4f5d75" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#arrow)"/>
+      <line x1="812" y1="528" x2="387" y2="528" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <path d="M 164 620 H 208 A 8 8 0 0 1 216 628 V 636 A 8 8 0 0 1 208 644 H 166" fill="none" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+      <line x1="168" y1="668" x2="375" y2="668" stroke="#4f5d75" stroke-width="1.2" marker-end="url(#arrow)"/>
+
+      <!-- Message labels (masked) -->
+      <rect x="219" y="128" width="104" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="271" y="137" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">PUSH · STEP + SUBMIT</text>
+
+      <rect x="431" y="176" width="120" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="491" y="185" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">POLL · MARKER vs ORIGIN</text>
+
+      <rect x="447" y="224" width="86" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="490" y="233" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CHANGED · NEW SHA</text>
+
+      <rect x="670" y="298" width="102" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="721" y="307" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">REVIEW · VERIFY CI</text>
+
+      <rect x="437" y="320" width="108" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="491" y="329" fill="#eb6c36" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">PUSH · REVIEW VERDICT</text>
+
+      <rect x="211" y="368" width="120" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="271" y="377" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">POLL · MARKER vs ORIGIN</text>
+
+      <rect x="230" y="416" width="86" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="273" y="425" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">CHANGED · VERDICT</text>
+
+      <rect x="546" y="508" width="108" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="600" y="517" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">DECISION · THE RULING</text>
+
+      <rect x="232" y="626" width="140" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="302" y="635" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">EXECUTE · FIX OR NEXT STEP</text>
+
+      <rect x="230" y="648" width="82" height="12" rx="2" fill="#f5f5f5"/>
+      <text x="271" y="657" fill="#4f5d75" font-size="8" font-family="'Geist Mono', monospace" text-anchor="middle" letter-spacing="0.06em">PUSH · NEXT STEP</text>
+
+      <!-- Actors -->
+      <rect x="85" y="40" width="150" height="56" rx="6" fill="#f5f5f5"/>
+      <rect x="85" y="40" width="150" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="160" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Implementer</text>
+      <text x="160" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">any CLI · swappable</text>
+
+      <rect x="305" y="40" width="150" height="56" rx="6" fill="#f5f5f5"/>
+      <rect x="305" y="40" width="150" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="380" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Repo mailbox</text>
+      <text x="380" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">handoff/ · git</text>
+
+      <rect x="525" y="40" width="150" height="56" rx="6" fill="#f5f5f5"/>
+      <rect x="525" y="40" width="150" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="600" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Auditor</text>
+      <text x="600" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">independent reviewer</text>
+
+      <rect x="745" y="40" width="150" height="56" rx="6" fill="#f5f5f5"/>
+      <rect x="745" y="40" width="150" height="56" rx="6" fill="#ffffff" stroke="#2d3142" stroke-width="1"/>
+      <text x="820" y="64" fill="#2d3142" font-size="12" font-weight="600" font-family="'Geist', sans-serif" text-anchor="middle">Founder</text>
+      <text x="820" y="80" fill="#4f5d75" font-size="9" font-family="'Geist Mono', monospace" text-anchor="middle">rulings only</text>
+    </svg>
