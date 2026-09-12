@@ -1,7 +1,7 @@
 ---
 name: repo-front-door
 "description": "Polish repo for outsiders: green CI, download, README, brand."
-version: 0.1.0
+version: 0.1.1
 author: Hermes
 platforms: [macos, linux]
 metadata:
@@ -237,6 +237,7 @@ Watch a build through to completion rather than pushing and assuming.
   name, email, and data. Use guest state or skip screenshots.
 - **Spaces in asset filenames:** `logo.jpeg` forces `%20` in references. Use
   hyphenated names.
+- **In-repo README images break regionally when `raw.githubusercontent.com` is down.** Relative-path images are served through `raw.githubusercontent.com`, so a Fastly/edge incident there breaks every in-repo README image for viewers in that region — while the page HTML still loads, making it look repo-specific when it isn't (verify: `curl` any raw URL for a big public repo; if it fails too, it's the host, not the repo). A cloud-browser check from another region masks the problem — always test from the audience's network. Resilient fix: point featured images at a public CDN — `https://cdn.jsdelivr.net/gh/OWNER/REPO@REF/<path>` — GitHub proxies external images through camo (a different backend); then re-verify from the audience side by extracting the camo URL from the rendered README HTML and curling it.
 
 ## Reference files
 
