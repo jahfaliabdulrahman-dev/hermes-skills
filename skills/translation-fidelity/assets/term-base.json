@@ -1,0 +1,226 @@
+{
+  "meta": {
+    "note": "قاعدة مصطلحات الترجمة عالية الحرفية — تُوسّع بعد كل قرار ترجمة جديد (انظر references/decisions-log.md). البنية: term=المصطلح الإنجليزي، ar=المقابل المعتمد، avoid=صيغ ممنوعة، note=القيد، domain=المجال.",
+    "updated": "2026-09-14"
+  },
+  "entries": [
+    {
+      "term": "mechanics",
+      "ar": "الآلية",
+      "avoid": [
+        "الميكانيكا"
+      ],
+      "note": "عند معنى «آلية العمل». إن قُصد علم الفيزياء فالميكانيكا صحيحة",
+      "domain": "explanatory"
+    },
+    {
+      "term": "premortem",
+      "ar": "التحليل المسبق",
+      "avoid": [
+        "البصمة المسبقة"
+      ],
+      "note": "يُبقى PreMortem لاتينياً عند أول تعريف",
+      "domain": "methodology"
+    },
+    {
+      "term": "post-mortem",
+      "ar": "التحليل الرجعي (بعد الحدث)",
+      "avoid": [],
+      "note": "طبيّاً: تشريح الجثة",
+      "domain": "methodology"
+    },
+    {
+      "term": "gate",
+      "ar": "بوابة",
+      "avoid": [],
+      "note": "",
+      "domain": "engineering"
+    },
+    {
+      "term": "baseline",
+      "ar": "خط الأساس",
+      "avoid": [
+        "القاعدة الأساسية"
+      ],
+      "note": "",
+      "domain": "engineering"
+    },
+    {
+      "term": "rollback",
+      "ar": "التراجع",
+      "avoid": [],
+      "note": "التراجع عن الإصدار",
+      "domain": "devops"
+    },
+    {
+      "term": "pipeline",
+      "ar": "خط المعالجة",
+      "avoid": [
+        "الأنبوب"
+      ],
+      "note": "في CI/CD: خط النشر. «أنبوب» للمادي فقط",
+      "domain": "engineering"
+    },
+    {
+      "term": "evidence",
+      "ar": "الدليل",
+      "avoid": [],
+      "note": "للرياضيات: برهان",
+      "domain": "general"
+    },
+    {
+      "term": "fixture",
+      "ar": "عينة اختبار",
+      "avoid": [],
+      "note": "داخلياً نقول «فيّكسترة» بشكل غير رسمي",
+      "domain": "software"
+    },
+    {
+      "term": "implementer",
+      "ar": "المنفذ",
+      "avoid": [],
+      "note": "",
+      "domain": "agents"
+    },
+    {
+      "term": "reviewer / auditor",
+      "ar": "المدقق",
+      "avoid": [],
+      "note": "احذر: «المراجع» تعني قائمة المراجع (references) — ليست المدقق؛ لترجمة reviewer الشخصي استخدم «المدقق»",
+      "domain": "agents"
+    },
+    {
+      "term": "traceability",
+      "ar": "قابلية التتبع",
+      "avoid": [],
+      "note": "",
+      "domain": "engineering"
+    },
+    {
+      "term": "epic",
+      "ar": "EPIC (تبقى لاتينية)",
+      "avoid": [
+        "الملحمة"
+      ],
+      "note": "مصطلح إدارة منتجات لا يُعرّب",
+      "domain": "pm"
+    },
+    {
+      "term": "sprint",
+      "ar": "دورة قصيرة (sprint)",
+      "avoid": [
+        "السباق"
+      ],
+      "note": "",
+      "domain": "pm"
+    },
+    {
+      "term": "requirement",
+      "ar": "المتطلب",
+      "avoid": [],
+      "note": "",
+      "domain": "engineering"
+    },
+    {
+      "term": "specification",
+      "ar": "المواصفة",
+      "avoid": [],
+      "note": "spec pack = حزمة المواصفات",
+      "domain": "engineering"
+    },
+    {
+      "term": "effectiveness",
+      "ar": "الفعالية",
+      "avoid": [],
+      "note": "الخلط الشهير: effectiveness=الفعالية (بلوغ الهدف) · efficiency=الكفاءة (اقتصاد الوسائل)",
+      "domain": "general"
+    },
+    {
+      "term": "efficiency",
+      "ar": "الكفاءة",
+      "avoid": [],
+      "note": "انظر effectiveness — لا تخلط",
+      "domain": "general"
+    },
+    {
+      "term": "mechanism",
+      "ar": "الآلية",
+      "avoid": [
+        "الميكانيزم"
+      ],
+      "note": "«الآلية» في الفصحى؛ الميكانيزم دخيل",
+      "domain": "general"
+    },
+    {
+      "term": "scenario",
+      "ar": "السيناريو",
+      "avoid": [],
+      "note": "شائعة ومقبولة",
+      "domain": "general"
+    },
+    {
+      "term": "workshop",
+      "ar": "ورشة عمل",
+      "avoid": [],
+      "note": "",
+      "domain": "general"
+    },
+    {
+      "term": "template",
+      "ar": "القالب",
+      "avoid": [
+        "التمبليت"
+      ],
+      "note": "",
+      "domain": "general"
+    },
+    {
+      "term": "dashboard",
+      "ar": "لوحة المعلومات",
+      "avoid": [
+        "الطبلون"
+      ],
+      "note": "",
+      "domain": "software"
+    },
+    {
+      "term": "checkpoint",
+      "ar": "نقطة فحص",
+      "avoid": [],
+      "note": "",
+      "domain": "engineering"
+    },
+    {
+      "term": "deployment",
+      "ar": "النشر",
+      "avoid": [],
+      "note": "",
+      "domain": "devops"
+    },
+    {
+      "term": "monitoring",
+      "ar": "المراقبة",
+      "avoid": [],
+      "note": "",
+      "domain": "ops"
+    },
+    {
+      "term": "incident",
+      "ar": "الحادث",
+      "avoid": [
+        "الحادثة"
+      ],
+      "note": "الأمن: «حادث أمني»",
+      "domain": "ops"
+    },
+    {
+      "term": "backlog",
+      "ar": "قائمة الأعمال المتراكمة",
+      "avoid": [
+        "الباكلوج"
+      ],
+      "note": "",
+      "domain": "pm"
+    }
+  ]
+}

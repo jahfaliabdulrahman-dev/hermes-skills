@@ -1,7 +1,7 @@
 # Hermes Skills — Production-Grade Agent Skills for Flutter, DevOps & Agent Operations
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Skills](https://img.shields.io/badge/skills.sh-18%20skills-6366f1)](https://skills.sh)
+[![Skills](https://img.shields.io/badge/skills.sh-19%20skills-6366f1)](https://skills.sh)
 [![Sponsor](https://img.shields.io/badge/sponsor-GitHub%20Sponsors-ea4aaa.svg)](https://github.com/sponsors/jahfaliabdulrahman-dev)
 
 **A curated collection of battle-tested agent skills forged in production Flutter projects (CarSah, Hermex Android, Azdal). Every pattern, pitfall, and protocol earned through real debugging sessions — 48 documented patterns and counting.**
@@ -17,6 +17,7 @@
 | [`specification-writing`](skills/specification-writing/SKILL.md) | The AI-Agent App Build Specification Pack framework — 22-slot structure (27+ files) governing every project from product discovery to financial models and personal build plans. Enforces the NO PROCEDURAL REDUCTION rule. This is the blueprint every project starts from | 10 KB |
 | [`flutter-soul-stewardship`](skills/flutter-soul-stewardship/SKILL.md) | Exact procedure for writing and maintaining SOUL.md agent identity files — the REAL driver of multi-agent performance. Deterministic, cross-profile, machine-verifiable | 4 KB |
 | [`what-if-analysis`](skills/what-if-analysis/SKILL.md) | Structured anticipatory skepticism before any commitment — PreMortem (Klein, HBR 2007) + CIA "What If?" Analysis + HAZOP guide-words + the 8 established schools, distilled into a 60-minute session protocol with early-warning indicators and owners. Ships with the full Arabic methodology guide | 20 KB |
+| [`translation-fidelity`](skills/translation-fidelity/SKILL.md) | High-fidelity English↔Arabic translation protocol — sense-checking before choosing equivalents, a growing term base with forbidden renderings, independent back-translation by a separate reviewer, and an automated term gate (`check_terms.py`). Born from a real fidelity correction; ships with a decisions log | 24 KB |
 
 ### Flutter & Mobile
 
@@ -101,6 +102,7 @@ npx skills add jahfaliabdulrahman-dev/hermes-skills
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill specification-writing
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-soul-stewardship
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill what-if-analysis
+npx skills add jahfaliabdulrahman-dev/hermes-skills --skill translation-fidelity
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-isar-clean-arch-setup
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-android-build-system
 npx skills add jahfaliabdulrahman-dev/hermes-skills --skill flutter-design-anti-patterns
