@@ -1,7 +1,7 @@
 ---
 name: skill-ecosystem-sync
 description: Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to every Flutter swarm profile plus default. This is the ONE skill to load before any "update skills" task.
-version: 1.2.3
+version: 1.2.4
 author: Sulaiman
 tags: [skills, update, devops, npx, clawhub, hermes, profiles, sync, maintenance]
 ---
@@ -195,12 +195,13 @@ After updating default profile, sync ALL Flutter swarm profiles (derive the live
 KEY_SKILLS="flutter-android-build-system flutter-design-anti-patterns \
   flutter-isar-clean-arch-setup flutter-lessons-patterns flutter-patterns \
   flutter-soul-stewardship github-project-audit repo-front-door \
-  specification-writing supabase-fullstack skill-ecosystem-sync \
+  what-if-analysis specification-writing supabase-fullstack skill-ecosystem-sync \
   find-docs find-skills officecli"
 
 for profile_dir in ~/.hermes/profiles/flutter-*/; do
   for skill in $KEY_SKILLS; do
     src="$HOME/.hermes/skills/$skill"
+    [ -d "$src" ] || src=$(find -L "$HOME/.hermes/skills" -maxdepth 3 -type d -name "$skill" | head -1)
     target="$profile_dir/skills/$skill"
     if [ -d "$src" ] && [ ! -L "$target" ] && [ ! -d "$target" ]; then
       ln -s "$src" "$target"
