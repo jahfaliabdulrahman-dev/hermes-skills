@@ -1,7 +1,7 @@
 ---
 name: what-if-analysis
 description: "Use when planning/gating — «ماذا لو» What-If anticipation."
-version: 1.0.0
+version: 1.0.1
 author: Sulaiman
 tags: [planning, risk, premortem, what-if, hazop, anticipation, governance, methodology]
 ---
