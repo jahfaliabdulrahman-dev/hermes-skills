@@ -18,14 +18,18 @@ sources:
 # Flutter SDK Version, Deprecation & Migration Reference
 
 > **Freshness contract — read first.**
-> Generated **2026-08-29**. Stable at generation time: **Flutter `3.47.2`** (2026-08-27) bundling **Dart `3.13.2`**.
+> Generated **2026-10-02**. Stable at generation time: **Flutter `3.47.6`** (2026-10-01) bundling **Dart `3.13.5`**.
 > Regenerate with `python3 scripts/build_flutter_sdk_changelog.py --fetch` (~4s; resolves the SDK from
 > `$FLUTTER_ROOT` or `which flutter`, no hard-coded paths).
-> Drift is detected by `python3 scripts/check_freshness.py` — exit 1 means the published stable moved
-> ahead of these files. **If the gate fails, regenerate before answering any version question.**
+> Drift is detected by `python3 scripts/check_freshness.py`. Default mode reports and stays exit-0 — a fresh
+> run ends with a final `{"wakeAgent": false}` line so a cron wake gate skips the agent, while `DRIFT DETECTED`
+> output (no such line) wakes it. Use `--strict` for gate semantics — exit 1 on drift or unverifiable
+> network. **If the gate reports drift, regenerate before answering any version question.** A non-zero exit
+> without `--strict` means the script itself crashed.
 > The gate itself is tamper-tested: `python3 scripts/test_gate_tamper.py` seeds five defects (stale
 > header, deleted minor row, wrong Dart floor, wrong first-stable row, emptied deprecation reference)
-> and requires exit 1 with the right reason for each, plus a green control run.
+> and requires exit 1 under `--strict` with the right reason for each, plus green control runs —
+> including the wake-line convention (present when fresh, absent on drift).
 
 ## Rule 0 — never state a Flutter version from memory
 
@@ -143,15 +147,18 @@ Pair this skill with `dart-sdk-changelog` for the Dart-side feature matrix.
 ```bash
 cd <this skill directory>
 python3 scripts/build_flutter_sdk_changelog.py --fetch   # re-extracts the stable tree itself
-python3 scripts/check_freshness.py                       # must print ALL FRESH, exit 0
+python3 scripts/check_freshness.py --strict                 # must print ALL FRESH, exit 0
 ```
 The generator finds the Flutter SDK via `$FLUTTER_ROOT`, else `which flutter`, and needs it to be a git
 checkout (standard `git clone`, Homebrew and `fvm` installs are). Pass `--flutter-root PATH` otherwise.
 Then update the "Freshness contract" block and the highest-impact table if new buckets appeared — the
 gate fails if that table disagrees with the generated data, so it cannot silently rot.
 
-Automate it: run `scripts/check_freshness.py` on a schedule (cron / CI). It prints deterministic output
-and exits non-zero only on real drift, so it is safe as a change-detector that wakes an agent up.
+Automate it: attach `scripts/check_freshness.py` to a cron job as a wake gate (the job's `script`
+field) — fresh runs end with `{"wakeAgent": false}` (agent skipped silently), drift output wakes the
+agent with the report. In `--strict` mode it exits 1 on drift or unverifiable network — use that in
+CI. Never wire a bare non-zero-exit gate as a Hermes `monitor` source: the scheduler reads ANY
+non-zero exit as "source failed" (operator alert, no agent wake), so drift would never auto-fix.
 
 ---
 
@@ -163,6 +170,6 @@ and rebuilt here because it carried three defects that this design structurally 
 
 | Upstream defect | Root cause | Fix applied here |
 | :--- | :--- | :--- |
-| Version matrix ended at "Flutter 3.27 / 3.29 — Late 2024 / 2025", missing 6 stable minors and ~18 months | hand-typed tables, and CI gates that only checked frontmatter, link targets and style ("e.g."/"i.e." bans) — never a version fact | matrices are **generated** from `releases_macos.json` + the stable git tree, and a cron freshness gate fails when the published stable moves ahead of the file |
+| Version matrix ended at "Flutter 3.27 / 3.29 — Late 2024 / 2025", missing 6 stable minors and ~18 months | hand-typed tables, and CI gates that only checked frontmatter, link targets and style ("e.g."/"i.e." bans) — never a version fact | matrices are **generated** from `releases_macos.json` + the stable git tree, and a cron freshness wake-gate wakes an agent when the published stable moves ahead of the file |
 | `Flutter 3.27 / 3.29 → Dart 3.7 / 3.8` (both off by one; truth is 3.6.0 and 3.7.0) | mapping written from memory | mapping read from the release index, per release |
 | `Color.withOpacity` "deprecated in Flutter 3.22" | recalled, not checked; the wide-gamut phase 1 actually landed in stable **3.27.0** (docs.flutter.dev/release/breaking-changes/wide-gamut-framework) | deprecation versions derive from the `@Deprecated` marker in the source plus the documented beta→stable rule |

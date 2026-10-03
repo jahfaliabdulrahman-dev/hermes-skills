@@ -22,7 +22,7 @@ Concrete deployment of the repo-mailbox loop. Repo: jahfaliabdulrahman-dev/carsa
 - Job `carsah-loop-coordinator` (renamed twice: poller → watchdog →
   coordinator, tracking the founder's decisions). Schedule `every 10m`
   (founder decision 2026-08-08 — was 2m), `monitor_script=carsah_handoff_monitor.sh`,
-  `deliver=local`, `workdir=/Users/abdurrahmanjahfali/Projects/CarSah`,
+  `deliver=local`, `workdir=~/Projects/CarSah`,
   toolsets terminal+file.
 - Role: on a new handoff/claude/ message → `git pull --rebase` → **skip if the
   implementer is already running** (`pgrep -f "hermes chat --resume <SESSION>"`
@@ -80,7 +80,7 @@ empty. Corrected prompt:
 
 ```text
 /loop 3m نفّذ بالترتيب (Bash حقيقي، لا تخمين):
-REPO="/Users/abdurrahmanjahfali/Projects/CarSah"
+REPO="~/Projects/CarSah"
 0) اختبار ذاتي (أول مرة): ls "$REPO/handoff/sulaiman/" — إن فشل: قل PATH_ERROR وتوقف.
 1) git -C "$REPO" fetch origin main 2>&1 | head -5        ← بدون -q (الأخطاء تظهر)
 2) LAST=$(git -C "$REPO" log -1 --format=%H origin/main -- handoff/sulaiman/)

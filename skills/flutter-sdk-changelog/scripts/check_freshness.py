@@ -12,12 +12,19 @@ Checks
   4. Every row of the hand-curated "highest-impact deprecations" table in SKILL.md matches the
      generated deprecation reference (symbol -> first stable release).
 
-Exit 0 = fresh. Exit 1 = drift or internal inconsistency.
-Output is deterministic (no timestamps), so it can be used as a cron change-detector too.
+Semantics — wake-gate mode by default (safe as a Hermes cron `script`/wake gate), strict on demand:
+  * default : exit 0 in every non-crash outcome. A fresh run ends with a final {"wakeAgent": false}
+    line → a cron agent run is skipped silently; drift prints DRIFT DETECTED (no such line) and
+    wakes the agent with the report. A non-zero exit happens only on an internal crash.
+    (Never signal drift via the exit code: Hermes cron reads ANY non-zero script exit as
+    "source failed" — an operator alert with no agent wake, so drift would never get fixed.)
+  * --strict: exit 1 when drift exists OR the live index could not be verified (network).
+Output is deterministic (no timestamps).
 
 Usage:
   python3 scripts/check_freshness.py            # checks the skill this script lives in
   python3 scripts/check_freshness.py --skill DIR
+  python3 scripts/check_freshness.py --strict   # gate semantics: non-zero on drift/unverifiable
 """
 from __future__ import annotations
 
@@ -41,6 +48,9 @@ def minor(v: str) -> tuple[int, int]:
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--skill", default=str(DEFAULT_SKILL), help="skill directory to validate")
+    ap.add_argument("--strict", action="store_true",
+                    help="gate semantics: exit 1 on drift or unverifiable network; default mode is "
+                         "report-only (exit 0) and ends fresh runs with the cron wake-gate line")
     args = ap.parse_args()
     skill = Path(args.skill).expanduser().resolve()
 
@@ -62,6 +72,7 @@ def main() -> int:
     # ---------------------------------------------------------------- live release index
     live_version = None
     fl_minors: dict[tuple[int, int], tuple[str, str, str]] = {}
+    transient: list[str] = []
     try:
         rel = json.loads(urllib.request.urlopen(RELEASES_URL, timeout=60).read())
         by_hash = {r["hash"]: r for r in rel["releases"]}
@@ -78,7 +89,9 @@ def main() -> int:
             if key not in fl_minors or date < fl_minors[key][1]:
                 fl_minors[key] = (r["version"], date, dm.group(0) if dm else "")
     except (urllib.error.URLError, ValueError, KeyError, TimeoutError) as e:
-        problems.append(f"NETWORK: could not read the Flutter release index ({e})")
+        transient.append(
+            f"NETWORK: could not read the Flutter release index ({e}) — transient, NOT drift; "
+            "retried next run")
 
     # ---------------------------------------------------------------- 1 & 2
     if live_version and matrix:
@@ -173,6 +186,8 @@ def main() -> int:
     print("FLUTTER SDK CHANGELOG — FRESHNESS GATE")
     print(f"skill         : {skill.name}")
     print(f"flutter stable: {live_version or 'unknown'}")
+    for t in transient:
+        print(f"  net  - {t}")
     for n in notes:
         print(f"  ok   - {n}")
     if problems:
@@ -181,8 +196,16 @@ def main() -> int:
             print(f"  FAIL - {p}")
         print("\nFix: python3 scripts/build_flutter_sdk_changelog.py --fetch, then update the freshness "
               "contract block and the highest-impact table in SKILL.md.")
+        # Drift is an observation, not a source failure: exit 0 in wake-gate mode (the OUTPUT
+        # change wakes a cron agent); --strict keeps classic gate semantics.
+        return 1 if args.strict else 0
+    if args.strict and transient:
+        print("\nINCOMPLETE — the live index was unverifiable (network); failing under --strict.")
         return 1
     print("\nALL FRESH")
+    if not args.strict:
+        # Wake-gate contract: last non-empty stdout line = skip the cron agent run, silently.
+        print('{"wakeAgent": false}')
     return 0
 
 

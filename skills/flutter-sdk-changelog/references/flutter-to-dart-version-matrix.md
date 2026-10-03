@@ -1,7 +1,7 @@
 # Flutter to Dart SDK Version Matrix (generated, not hand-typed)
 
-**Generated:** 2026-08-29 from `releases_macos.json` (Google's official release index).
-**Current stable at generation time:** Flutter `3.47.2` (2026-08-27), bundling Dart `3.13.2`.
+**Generated:** 2026-10-02 from `releases_macos.json` (Google's official release index).
+**Current stable at generation time:** Flutter `3.47.6` (2026-10-01), bundling Dart `3.13.5`.
 
 Every row below is the **first release of that minor line**. Regenerate with
 `python3 scripts/build_flutter_sdk_changelog.py --fetch` — never edit version numbers by hand.

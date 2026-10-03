@@ -2,8 +2,10 @@
 """Tamper suite for this skill's freshness gate.
 
 A gate that cannot fail is theatre. This suite copies the skill into a throwaway directory, breaks
-exactly ONE fact per case, and asserts the gate exits 1 with the expected reason — plus a control case
-proving an untouched copy still exits 0.
+exactly ONE fact per case, and asserts the gate exits 1 under --strict with the expected reason —
+plus control runs proving an untouched copy exits 0 and keeps the wake-gate convention: default
+mode exits 0 in every non-crash outcome, ends a fresh run with a {"wakeAgent": false} line, and
+omits that line when drift is present (the output change, not the exit code, wakes a cron agent).
 
 Usage (from anywhere):
     python3 scripts/test_gate_tamper.py            # tests the skill this script lives in
@@ -50,8 +52,9 @@ CASES: list[tuple[str, str, callable, str]] = [
 ]
 
 
-def run(gate_path: Path) -> tuple[int, str]:
-    r = subprocess.run([sys.executable, str(gate_path)], capture_output=True, text=True)
+def run(gate_path: Path, strict: bool = True) -> tuple[int, str]:
+    cmd = [sys.executable, str(gate_path)] + (["--strict"] if strict else [])
+    r = subprocess.run(cmd, capture_output=True, text=True)
     return r.returncode, r.stdout + r.stderr
 
 
@@ -61,13 +64,21 @@ def main() -> int:
         return 2
     work = Path(tempfile.mkdtemp(prefix="gate_tamper_"))
     failures = 0
+    case_failures = 0
     try:
         control = work / "control"
         shutil.copytree(SKILL, control)
         rc, _ = run(control / GATE)
         ok = rc == 0
-        print(f"[control] untouched copy{'':>32} rc={rc} -> {'GREEN (correct)' if ok else 'FAILED WRONGLY'}")
+        print(f"[control] untouched copy (--strict){'':>16} rc={rc} -> {'GREEN (correct)' if ok else 'FAILED WRONGLY'}")
         failures += (not ok)
+
+        # Wake-gate convention: default mode must stay exit-0 on fresh and print the skip line.
+        rc, out = run(control / GATE, strict=False)
+        line_ok = rc == 0 and '{"wakeAgent": false}' in out
+        print(f"[control] wake-gate line (default){'':>14} rc={rc} -> "
+              f"{'PRESENT (correct)' if line_ok else 'MISSING/WRONG'}")
+        failures += (not line_ok)
 
         for i, (label, relpath, mutate, expect) in enumerate(CASES, 1):
             d = work / f"case{i}"
@@ -89,11 +100,20 @@ def main() -> int:
                 if line.strip().startswith("FAIL"):
                     print(f"          {line.strip()[:120]}")
             failures += (not detected)
+            case_failures += (not detected)
+            if i == 1:
+                # Drift must stay exit-0 in default mode and DROP the wake line, so the output
+                # change (not a non-zero exit) is what wakes a cron agent.
+                rc_d, out_d = run(d / GATE, strict=False)
+                wg_ok = rc_d == 0 and expect in out_d and '{"wakeAgent": false}' not in out_d
+                print(f"[case 1] wake-gate convention (default){'':>12} rc={rc_d} -> "
+                      f"{'CORRECT' if wg_ok else 'WRONG — drift must not use exit codes'}")
+                failures += (not wg_ok)
     finally:
         shutil.rmtree(work, ignore_errors=True)
 
     total = len(CASES)
-    print(f"\ntamper cases detected: {total - failures if failures <= total else 0}/{total}")
+    print(f"\ntamper cases detected: {total - case_failures}/{total} (total failures: {failures})")
     if failures:
         print("SUITE FAILED — the gate cannot be trusted until every case exits 1 for the right reason.")
         return 1

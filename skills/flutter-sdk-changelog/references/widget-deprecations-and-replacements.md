@@ -1,7 +1,7 @@
 # Flutter Widget & API Deprecations (generated from the stable source tree)
 
-**Generated:** 2026-08-29 by `scripts/build_flutter_sdk_changelog.py` from the
-`flutter/flutter` **stable** branch (`git grep` over `@Deprecated` annotations at `d3b14c87690`, Flutter `3.47.2`).
+**Generated:** 2026-10-02 by `scripts/build_flutter_sdk_changelog.py` from the
+`flutter/flutter` **stable** branch (`git grep` over `@Deprecated` annotations at `5fc346839b5`, Flutter `3.47.6`).
 
 **How the version column is derived:** `docs/contributing/Tree-hygiene.md` requires the annotation to record
 *the beta version current when the deprecation landed* (`This feature was deprecated after v<beta>`).

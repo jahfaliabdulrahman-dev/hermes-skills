@@ -1,5 +1,6 @@
 ---
 name: "flutter-isar-clean-arch-setup"
+version: 1.0.0
 description: "Set up a Flutter + Isar + Riverpod Clean Architecture project. Covers manual file creation, schema generation, avoiding dependency hell, and structuring domain/data/presentation layers."
 ---
 
@@ -438,7 +439,7 @@ gradle.projectsEvaluated {
 }
 ```
 
-### 16c. Namespace-Verification (Post-Generation / Pre-Release)
+### 16c. Namespace-Verification (Post-Swarm / Pre-Release)
 
 AndroidManifest's `android:name=".MainActivity"` resolves relative to Gradle `namespace`. Mismatch → `ClassNotFoundException` → instant crash.
 
