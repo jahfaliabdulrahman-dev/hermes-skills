@@ -1,7 +1,7 @@
 ---
 name: skill-ecosystem-sync
 description: Use when syncing 4 skill registries (مزامنة السجلات). Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to every Flutter swarm profile plus default. This is the ONE skill to load before any "update skills" task.
-version: 1.5.0
+version: 1.6.0
 author: Sulaiman
 tags: [skills, update, devops, npx, clawhub, hermes, profiles, sync, maintenance]
 ---
@@ -280,7 +280,11 @@ See `references/2026-07-18-skill-audit-findings.md` for the full 8-skill audit r
 
 ## Phase 4: Profile Swarm Sync
 
-After updating the default profile, sync ALL profiles (derive the live list: `ls ~/.hermes/profiles/` — the default profile is the store itself, not a target; external skills live under `~/.agents/skills/`):
+After updating the default profile, sync the profiles that actually carry a skill tree (derive the live list:
+`ls -d ~/.hermes/profiles/*/skills` — the default profile is the store itself, not a target; external skills live
+under `~/.agents/skills/`). **A profile directory may hold nothing but `runtime/`** — a session-isolation shell with
+no skills tree, because it resolves skills from the default store. Zero matching targets is a legitimate result:
+report it and touch nothing (never manufacture a `skills/` directory the runtime does not read).
 
 ```bash
 LINKER="$HOME/.hermes/skills/autonomous-ai-agents/botmaker/scripts/link_skill_tree.py"
@@ -445,6 +449,20 @@ Rules:
 - **PITFALL 25: upstream marketplace `SKILL.md` files may carry no H1.** The body can start straight after the
   frontmatter fence, so a provenance block inserted "after the first heading" silently lands nowhere. Insert it
   after the closing `---`, with an H1 fallback only when the frontmatter is absent.
+
+- **PITFALL 26: a profile directory can be a shell with no `skills/` tree at all.** Phase 4's `rglob` then returns
+  nothing and a naive sync either errors or "helpfully" creates the tree. Derive targets with
+  `ls -d ~/.hermes/profiles/*/skills`; an empty list is the state to REPORT (profile resolves from the default
+  store), not a failure and not a licence to build directories. The repair pass's glob is harmless here — it
+  simply matches nothing — so the defect only shows up as a silently missing Phase 4, which is why the zero must
+  be written down.
+
+- **PITFALL 27: the updater protects upstream deletions but leaves the lock lying.** When an upstream pack drops a
+  skill, `skills update` prints "appear to have been deleted upstream" and **skips the deletion in non-interactive
+  mode** — correct for a cron run (nothing is deleted without an owner), but the lock and the local copy both keep
+  the vanished name, so the next `--diff` shows it as installed-and-current while the upstream no longer ships it.
+  Report such names explicitly as `UPSTREAM-DELETED, KEPT` and let the owner decide; do not treat "0 removals" as
+  "nothing changed upstream".
 
 ---
 
