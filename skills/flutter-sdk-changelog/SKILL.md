@@ -18,7 +18,10 @@ sources:
 # Flutter SDK Version, Deprecation & Migration Reference
 
 > **Freshness contract — read first.**
-> Generated **2026-10-02**. Stable at generation time: **Flutter `3.47.6`** (2026-10-01) bundling **Dart `3.13.5`**.
+> Generated **2026-10-30**. Stable at generation time: **Flutter `3.47.9`** (2026-10-29) bundling **Dart `3.13.7`**.
+> (Cross-channel note: the Dart gap has been zero since `3.47.8` (2026-10-23) — `3.47.7` of 2026-10-08 still
+> bundled Dart `3.13.5`; the standalone Dart stable channel is `3.13.7` too, so Flutter and standalone Dart
+> ship the same Dart patch, and the `3.47.9` patch release kept it.)
 > Regenerate with `python3 scripts/build_flutter_sdk_changelog.py --fetch` (~4s; resolves the SDK from
 > `$FLUTTER_ROOT` or `which flutter`, no hard-coded paths).
 > Drift is detected by `python3 scripts/check_freshness.py`. Default mode reports and stays exit-0 — a fresh
@@ -30,6 +33,11 @@ sources:
 > header, deleted minor row, wrong Dart floor, wrong first-stable row, emptied deprecation reference)
 > and requires exit 1 under `--strict` with the right reason for each, plus green control runs —
 > including the wake-line convention (present when fresh, absent on drift).
+> **Network gotcha (fixed 2026-10-24 in all three scripts):** this machine's Python 3.13 framework build has
+> `ssl.get_default_verify_paths().cafile is None`, so `urllib` fetches failed with
+> `CERTIFICATE_VERIFY_FAILED` while `curl` (which reads `/etc/ssl/cert.pem`) worked. Every script now builds its
+> TLS context from `certifi` with a system-bundle fallback — verification is never disabled. If you see that
+> error again, an unpatched `urllib` call is the cause, not an outage, and it is never a reason to regenerate.
 
 ## Rule 0 — never state a Flutter version from memory
 

@@ -1,7 +1,7 @@
 ---
 name: skill-ecosystem-sync
-description: Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to every Flutter swarm profile plus default. This is the ONE skill to load before any "update skills" task.
-version: 1.3.2
+description: Use when syncing 4 skill registries (مزامنة السجلات). Complete skill ecosystem update workflow — update all skills across 4 registries (npx/skills.sh, GitHub published, ClawHub/Hermes hub, profile swarm), audit modified bundled skills, install missing skills from external repos, and sync to every Flutter swarm profile plus default. This is the ONE skill to load before any "update skills" task.
+version: 1.5.0
 author: Sulaiman
 tags: [skills, update, devops, npx, clawhub, hermes, profiles, sync, maintenance]
 ---
@@ -119,31 +119,122 @@ cd /tmp/hermes-skills && git log --oneline -3
 
 ## Phase 2: Update npx/skills.sh External Skills
 
-Skills installed from external repos via `npx skills`:
+Skills installed from external repos via `npx skills`.
+
+### 2-step GATE — derive the source list, never recite it
+
+The repos named anywhere in this file are EXAMPLES that drift out of date. The authoritative registry of
+origin is the installer lock (`~/.agents/.skill-lock.json`), which records a `source` per installed skill.
+Any source the doc does not name is a source nobody checks — new upstream skills in it are never discovered.
 
 ```bash
-# 2a. Update all globally installed npx skills
-npx skills update -g -y
-
-# 2b. Check for NEW skills from known repos
-# flutter/skills (was 10, now 22 — gained 12 Dart skills)
-npx skills add flutter/skills -l 2>&1 | grep -E '^\│\s+[a-z]' | sed 's/│//g' | awk '{print $1}' | sort
-
-# coreyhaines31/marketingskills (was 37, now 48 — gained 11)
-npx skills add coreyhaines31/marketingskills -l 2>&1 | grep -E '^\│\s+[a-z]' | sed 's/│//g' | awk '{print $1}' | sort
-
-# 2c. Install missing skills
-npx skills add flutter/skills -g -y --skill '*'        # all 22
-npx skills add coreyhaines31/marketingskills -g -y --skill '*'  # all 48
+SCRIPT=~/.hermes/skills/devops/skill-ecosystem-sync/scripts/upstream_source_map.py
+python3 "$SCRIPT" --coverage      # exit 2 = SKILL.md is name-list-based instead of deriving from the lock
 ```
 
-**Sources to check:**
-| Source | Command | Purpose |
-|--------|---------|---------|
-| `flutter/skills` | `npx skills add flutter/skills -l` | Dart + Flutter official skills |
-| `coreyhaines31/marketingskills` | `npx skills add coreyhaines31/marketingskills -l` | Marketing skills |
-| `vercel-labs/agent-skills` | Already have find-skills | CLI skills |
-| `upstash/context7` | Already have find-docs | Documentation |
+Run this gate FIRST in every cycle. It does NOT check that repos are named in this file — naming them is the
+defect. It checks that the PROCEDURE derives the list from the lock (the `--sources` loop below is present) and
+prints the live inventory. A source in the inventory needs action only when 2b's `--diff` reports missing
+skills; a source that is not written down anywhere is the normal state, not a failure.
+
+### 2a. Update every installed npx skill (all sources at once)
+
+```bash
+npx skills update -g -y
+# MANDATORY right after (PITFALL 23 — the updater re-links what it updated):
+python3 ~/.hermes/skills/devops/skill-store-hygiene/scripts/audit_skill_duplicates.py
+python3 -c "import json,pathlib,os;p=pathlib.Path.home()/'.hermes/skills/.retired.json';print([n for n in json.loads(p.read_text())['retired'] if (pathlib.Path.home()/'.hermes/skills'/n).exists()] or 'no resurrection')"
+```
+
+The second line prints any retired name that came back; remove that registration and say so in the report.
+
+### 2b. Discover NEW skills, one pass per DERIVED source
+
+```bash
+for src in $(python3 "$SCRIPT" --sources | grep -v 'jahfaliabdulrahman-dev/hermes-skills'); do
+  echo "### $src"
+  npx skills add "$src" -l > "/tmp/upstream-$(echo "$src" | tr '/' '-').txt" 2>&1
+  python3 "$SCRIPT" --diff "$src" "/tmp/upstream-$(echo "$src" | tr '/' '-').txt"
+done
+```
+
+The `--diff` output is the ONLY honest answer to "what is new upstream" — it parses the `-l` listing and
+compares it against the lock. It exits 1 rather than printing `missing=0` when it parsed zero names, so a
+format change upstream surfaces as a failure instead of a clean report.
+
+Our own published repo is excluded above on purpose: it is Phase 1's job, and `npx skills update` mirrors it
+into `.agents/` from the PUBLISHED side (PITFALL 20).
+
+### 2c. Install the missing ones — as an OWNER DECISION per PITFALL 19
+
+**Proof-of-intent gate — run BEFORE any install of an `ABSENT` name.** Absence is not the same as "never had it":
+a skill can be missing because it was DELIBERATELY removed (too noisy, wrong direction, superseded). Reinstalling it
+resurrects a decision the owner already took. Five witnesses, all cheap:
+
+```bash
+python3 -c "import json,pathlib;d=json.loads((pathlib.Path.home()/'.agents/.skill-lock.json').read_text());print('dismissed:',d.get('dismissed'))"
+python3 -c "import json,pathlib;p=pathlib.Path.home()/'.hermes/skills/.retired.json';print('retired:',list(json.loads(p.read_text())['retired']) if p.exists() else [])"
+ls ~/.hermes/skills/.archive | grep -x '<name>'                       # retired deliberately by us
+python3 -c "import json,pathlib;d=json.loads((pathlib.Path.home()/'.hermes/skills/.usage.retired.json').read_text());print([k for k in d if '<name>' in k])"
+for s in ~/.hermes/skills/.curator_backups/*/skills.tar.gz; do tar tzf "$s" | grep -q "<name>/" && echo "present in $s"; done
+```
+
+The fifth witness (`.retired.json`) is the machine-readable one and the only one a future agent will read:
+**every deliberate retirement writes a row there in the same session**, with `reason`, `replaced_by`, `archive`
+and the exact `restore` command. `--diff` then prints that name as `RETIRED-DELIBERATE` instead of `ABSENT`, so
+the gate stops asking about it. A retirement with no row is a future reinstall.
+
+Verdict: **any witness hit => it existed before => ask the owner, never auto-install.** Zero hits across all four
+(dismissed empty, not in `.archive`, not in the retired usage ledger, absent from every weekly snapshot) is the
+only state that licenses installing it as a genuinely new upstream skill — and that zero state must be WRITTEN in
+the report, because "it was never deleted" is a claim that needs its evidence named.
+
+Do not blind-install a `not_via_npx` line either. First rule out a RENAME or a functional duplicate (fetch the
+upstream `SKILL.md`, compare with the local skill it would shadow). Genuine new skills install one at a time:
+
+```bash
+npx skills add <source> -g -y --skill '<name>'   # one skill at a time keeps the adoption auditable
+```
+
+Then re-run `--diff` and confirm the count dropped by exactly the number installed. Two legitimate exclusion
+reasons to WRITE DOWN instead of installing: (a) **duplicate mechanism** — a local skill already does the same
+job (e.g. an official `gradio` beside a local "build Gradio UIs" skill; a `context7-mcp` beside a `find-docs`
+that already drives the `ctx7` CLI); (b) **no trigger on this machine** — e.g. a family of `migrating-*` skills
+for frameworks we do not use. A duplicate is an owner decision (keep local vs swap to official), never a silent
+alongside-install.
+
+**Known sources on this machine are a measurement, not a list.** The set is legitimately wide (Dart/Flutter,
+marketing, LangGraph/LangChain, Pydantic AI, Gradio, HuggingFace, Vercel, context7, our own repo) and grows
+whenever a pack is adopted — which is exactly why 2a must be a loop over `--sources`.
+
+### 2d. A skill with NO lock entry has no upstream (or an unknown one)
+
+Locally authored, bundled, hub-installed and manually adopted skills do not appear in `.skill-lock.json`. They
+must NOT be pushed through `npx` — and they must not be reported as "up to date" either. Classify them once in
+the report: `authored-here` / `bundled` / `adopted` (provenance block in the file) / `unknown`. `unknown` is a
+finding, not a blank.
+
+### 2e. Hugging Face skills marketplace (`hf skills`)
+
+A FIFTH registry, separate from npx and from the Hub: `huggingface/skills` publishes ~25 first-party
+skills (TRL, datasets viewer, Spaces, hf-mem, paper reading…). Drive it from the CLI itself, never from a
+remembered list:
+
+```bash
+hf skills list                     # authoritative marketplace listing
+hf skills add <name> --dest ~/.hermes/cache/scratch/hf-skills   # STAGE, never straight into the store
+```
+
+`--dest` is the whole point: without it the CLI writes a DIRECTORY SYMLINK into `~/.agents/skills/` (shared,
+read-only to us). Stage → inspect → `cp -R` the real dirs into `~/.hermes/skills/<category>/` → stamp the
+provenance block (upstream URL + commit + licence) → run the frontmatter and duplicate gates. One shared
+`LICENSE-upstream-<SPDX>` at the category root, not a copy per skill. Then verify discovery with a real
+`skill_view(<name>)`, not an `ls`.
+
+Exclusions worth naming in the report: a family serving infrastructure we do not run (the cloud
+SageMaker/AWS set on a Mac-only store), and skills whose mechanism already exists locally (an official
+`trl-training` beside a local `trl-fine-tuning`) — duplicates are an owner decision, never a silent
+alongside-install.
 
 ---
 
@@ -266,12 +357,51 @@ Between monthly cycles (or on owner request), run the proactive half — the Cap
 3. **Deprecation protocol** — if a new skill measurably outperforms an existing one (speed on the owner's hardware, memory, Polars compatibility), flag the old for replacement.
 4. **Structured proposal** — every replacement suggestion ships as: `{Skill Name} -> {Technical Gap} -> {Skill to Replace} -> {Implementation Steps} -> {Expected ROI}`.
 
+## Mandatory Closing Report (owner rule — every sync, no exception)
+
+Every sync/update run ENDS with a report. The most important part is **the names**: a count alone is not an
+answer — the owner reads the list. Names are DERIVED from the run's own log, never typed from memory.
+
+Capture the update log while running 2a:
+
+```bash
+npx -y skills update -g -y > /tmp/skills-update-$(date +%F).log 2>&1
+python3 - <<'PY'
+import re, pathlib, os
+log = sorted(pathlib.Path('/tmp').glob('skills-update-*.log'))[-1]
+names = {m.group(1).strip() for l in log.read_text(errors='ignore').splitlines()
+         if (m := re.search(r'Updated (.+)$', l)) and 'skill' not in m.group(1)}
+print(log.name, len(names)); print('\n'.join(sorted(names)))
+PY
+```
+
+Report shape (six blocks, in this order):
+
+| Block | Content |
+|---|---|
+| **UPDATED (n)** | every skill name the updater reports as updated, one per line — the block the owner asked for first |
+| **NEW (n)** | names newly installed this run, with source `owner/repo` |
+| **RETIRED (n)** | names retired, with `replaced_by` and the archive path |
+| **EXCLUDED (n)** | names deliberately not installed + the reason class (duplicate mechanism / no trigger / owner decision) |
+| **STATE** | lock count, store count, duplicate audit result, gate verdicts |
+| **UNPROVEN** | what was NOT verified this run, one line, never omitted |
+
+Rules:
+
+1. **Names before numbers.** A report that says «N skills updated» without listing the N is rejected.
+2. **Three states, never merged:** updated ≠ newly installed ≠ updated-in-shared-store-only (PITFALL 20). Say which.
+3. **Zero is a result.** "NEW: none" and "RETIRED: none" are written explicitly; a missing block reads as work
+   that was not done.
+4. **The UNPROVEN line is not optional** — it is the only thing that stops the report from sounding more
+   certain than the run was.
+5. A run that fails midway still reports: what landed, what did not, and what state the store was left in.
+
 ## Summary: Total Skills Ecosystem
 
 | Registry | Count | Update Command |
 |----------|-------|---------------|
 | Our published (GitHub) | 11 | `git pull && rsync` (bidirectional) |
-| npx external (agents/) | ~50 | `npx skills update -g -y` |
+| npx external (derived from lock) | derive live: `upstream_source_map.py` | `npx skills update -g -y` + per-source `-l` diff |
 | ClawHub/Hermes hub | ~8 | `hermes skills check && hermes skills update` |
 | Hermes built-in/bundled | ~40 | `hermes update` |
 | Total default profile | ~89 | — |
@@ -304,8 +434,24 @@ Between monthly cycles (or on owner request), run the proactive half — the Cap
 - **PITFALL 20: `npx skills update -g -y` also refreshes the shared `~/.agents/skills/` copies of OUR OWN published skills.** Because those were installed from the public repo, the updater makes the `.agents` copy mirror the PUBLISHED repo — which may be older than the authoritative `~/.hermes/skills/` copy. Two consequences: (a) always rsync FROM `~/.hermes/skills/`, never from `.agents`, when both exist; (b) run the version check with a CHECKSUM diff (`rsync -a -n -c -i`), because a plain itemize diff reports mtime/permission noise (`t`/`p` flags) that masquerades as a content change and can trigger a pointless push or a false "regression" alarm. Only the `c`/`s` flags in the itemize string mean the bytes actually differ.
 - **PITFALL 21: `hermes skills diff` output direction is `--- stock / +++ yours`.** A `-` line is present in STOCK and ABSENT from your copy — i.e. a potential content REGRESSION, not an addition. Ours sometimes adds sections while silently dropping a rich stock section (the drift is not always additive), and a bundled skill can JUMP to a higher upstream major while the local copy keeps a lower version (a restructure, not an update). Neither is auto-resolvable: flag it as an owner decision (reset to stock vs keep local vs manual merge) instead of guessing.
 
+- **PITFALL 22: the named repos are not the source list.** A sync driven by a hardcoded repo list silently skips every source the doc never names — the lock (`.agents/.skill-lock.json`) is the only registry of origin, and it drifts: on this machine it held 9 distinct sources of which 4 were unnamed in this skill (a 22-skill LangGraph/LangChain pack, Pydantic AI, Gradio, HuggingFace), so nothing in their upstreams was ever discovered. Run `scripts/upstream_source_map.py --coverage` FIRST (exit 2 = the procedure is name-list-based, not lock-derived) and drive 2b from `--sources`. Corollary: `npx skills update -g -y` alone looks complete and is not — it refreshes what is installed, never what is new.
+
+- **PITFALL 23: `npx skills update -g -y` RE-CREATES missing Hermes registrations.** For every skill it actually updates, the CLI re-links it into each agent dir — including `~/.hermes/skills/` — so a registration you removed comes back. Measured 2026-10-18: an update run silently re-linked a root symlink for a skill whose canonical copy already lived in a category directory (duplicate twin, caught only by the dedup audit), and it would equally re-link a deliberately RETIRED name whenever that name has an upstream change (it did not return in that run only because its upstream was unchanged). Guard: after every 2a, run the duplicate audit and check `.retired.json` names for resurrection. Never treat "the update succeeded" as "the store is as I left it".
+
+- **PITFALL 24: `hf skills list`'s installed columns are not a presence map for the Hermes store.** It only marks
+  skills living in ITS destinations (`~/.agents/skills`, `~/.claude/skills`); a skill fully present under
+  `~/.hermes/skills/` shows blank in every column. Read presence from the store, use the CLI for the catalogue.
+  A forked copy is also invisible to `hf skills update` — re-import on demand instead of waiting for a sync.
+- **PITFALL 25: upstream marketplace `SKILL.md` files may carry no H1.** The body can start straight after the
+  frontmatter fence, so a provenance block inserted "after the first heading" silently lands nowhere. Insert it
+  after the closing `---`, with an H1 fallback only when the frontmatter is absent.
+
 ---
 
 ## Session Reference
 
 The founding session record — the full marathon log (publication, audits, installs, the google-workspace stock-restore decision, and the v1.1.0 bidirectional-sync addition) — lives in [references/2026-07-18-skill-audit-findings.md](references/2026-07-18-skill-audit-findings.md). Case history belongs there, not here; keep this file general.
+
+## Support files
+
+- `scripts/upstream_source_map.py` — the source registry probe. `--sources` feeds the 2b loop; `--coverage` is the gate (exit 2 = the procedure is name-list-based, not lock-derived); `--diff <source> <listing>` classifies each upstream-only name as `ABSENT` (not in the store and never retired — the real gap), `PRESENT-ELSEWHERE` (already installed by another route, i.e. a rename candidate, never a duplicate to install) or `RETIRED-DELIBERATE` (a row in `.retired.json` — reinstalling resurrects a decision), and exits 1 on an unparseable listing instead of reporting a false zero.

@@ -1,7 +1,7 @@
 ---
 name: "flutter-isar-clean-arch-setup"
 version: 1.0.0
-description: "Set up a Flutter + Isar + Riverpod Clean Architecture project. Covers manual file creation, schema generation, avoiding dependency hell, and structuring domain/data/presentation layers."
+description: "Use when scaffolding Flutter+Isar (مشروع Flutter جديد). Set up a Flutter + Isar + Riverpod Clean Architecture project. Covers manual file creation, schema generation, avoiding dependency hell, and structuring domain/data/presentation layers."
 ---
 
 # Flutter + Isar + Clean Architecture Setup

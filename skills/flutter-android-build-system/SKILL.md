@@ -1,6 +1,6 @@
 ---
 name: flutter-android-build-system
-description: Complete Flutter Android build system knowledge — Gradle configuration, namespace, applicationId, AGP versions, ProGuard/R8, Isar compatibility, signing, CI/CD. Merged from developer.android.com/build + isar.dev + docs.flutter.dev/deployment/android. MoA-audited 2026-07-06.
+description: Use when a Flutter Android build breaks (بناء Android). Complete Flutter Android build system knowledge — Gradle configuration, namespace, applicationId, AGP versions, ProGuard/R8, Isar compatibility, signing, CI/CD. Merged from developer.android.com/build + isar.dev + docs.flutter.dev/deployment/android. MoA-audited 2026-07-06.
 sources:
   - https://developer.android.com/build (Official AGP docs — namespace, build types, ProGuard)
   - https://isar.dev (Isar ProGuard keep rules)

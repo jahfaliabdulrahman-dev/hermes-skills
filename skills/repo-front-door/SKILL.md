@@ -1,6 +1,6 @@
 ---
 name: repo-front-door
-"description": "Polish repo for outsiders: green CI, download, README, brand."
+"description": "Use when polishing a repo for outsiders (تهيئة مستودع). Polish repo for outsiders: green CI, download, README, brand."
 version: 0.1.1
 author: Hermes
 platforms: [macos, linux]

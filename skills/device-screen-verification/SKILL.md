@@ -1,6 +1,6 @@
 ---
 name: device-screen-verification
-description: Visually verify Android device screens via adb screencap.
+description: Use when verifying an Android screen (لقطة الشاشة). Screenshot evidence via adb screencap.
 version: 1.0.0
 metadata:
   hermes:

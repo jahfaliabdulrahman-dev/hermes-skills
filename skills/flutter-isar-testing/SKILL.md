@@ -2,17 +2,10 @@
 name: flutter-isar-testing
 version: 1.0.0
 category: software-development
-description: In-memory Isar testing setup for Flutter — unit tests with real Isar DB on macOS
+description: Use when testing Isar in Flutter (اختبار Isar). In-memory Isar testing setup for Flutter — unit tests with real Isar DB on macOS
 metadata:
   provenance: SELF-BUILT (CarSah + prior maintenance-app experience, 2026-08-09) — NOT from official flutter.dev/isar.dev sources. Subject to the same review standards as external skills (LL-053).
-triggers:
-  - "test isar"
-  - "isar unit test"
-  - "in-memory isar"
-  - "flutter test isar"
-  - "isar headless"
-  - "libisar.dylib"
-  - "isar test helper"
+triggers: ["test isar", "isar unit test", "in-memory isar", "flutter test isar", "isar headless", "libisar.dylib", "isar test helper", "isar"]
 ---
 
 # Flutter Isar Testing — In-Memory Setup

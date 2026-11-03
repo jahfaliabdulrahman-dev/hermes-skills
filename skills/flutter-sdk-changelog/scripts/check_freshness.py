@@ -31,10 +31,37 @@ from __future__ import annotations
 import argparse
 import json
 import re
+import ssl
 import sys
 import urllib.error
 import urllib.request
 from pathlib import Path
+
+try:  # optional: the python.org framework build ships no CA bundle of its own
+    import certifi as _certifi
+except ImportError:  # pragma: no cover
+    _certifi = None
+
+
+def _ca_context() -> ssl.SSLContext | None:
+    """Verified-TLS context with an explicit CA bundle (verification is never disabled).
+
+    Root cause (2026-10-22, same defect as skill_freshness_gate.py): this Python 3.13
+    framework interpreter reports `ssl.get_default_verify_paths().cafile is None`, so
+    every urllib HTTPS call dies with CERTIFICATE_VERIFY_FAILED while curl — which reads
+    /etc/ssl/cert.pem — succeeds. Without this the gate degrades to "unverifiable" and
+    can print a green result on zero observations. Prefer certifi, then the system bundle.
+    """
+    for cand in ((_certifi.where() if _certifi else None), "/etc/ssl/cert.pem"):
+        if cand and Path(cand).is_file():
+            try:
+                return ssl.create_default_context(cafile=cand)
+            except ssl.SSLError:  # pragma: no cover
+                continue
+    return None
+
+
+_SSL_CTX = _ca_context()
 
 RELEASES_URL = "https://storage.googleapis.com/flutter_infra_release/releases/releases_macos.json"
 DEFAULT_SKILL = Path(__file__).resolve().parent.parent
@@ -74,7 +101,7 @@ def main() -> int:
     fl_minors: dict[tuple[int, int], tuple[str, str, str]] = {}
     transient: list[str] = []
     try:
-        rel = json.loads(urllib.request.urlopen(RELEASES_URL, timeout=60).read())
+        rel = json.loads(urllib.request.urlopen(RELEASES_URL, timeout=60, context=_SSL_CTX).read())
         by_hash = {r["hash"]: r for r in rel["releases"]}
         live_version = by_hash[rel["current_release"]["stable"]]["version"]
         for r in rel["releases"]:

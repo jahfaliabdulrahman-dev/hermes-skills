@@ -1,6 +1,6 @@
 ---
 name: flutter-soul-stewardship
-description: Exact procedure for the Lead Architect to update SOUL.md files across all Flutter profiles. Use when the Lead Architect needs to add, modify, or remove sections in any Flutter profile's SOUL.md or config.yaml system_prompt. Eliminates trial-and-error — every step is deterministic.
+description: Use when updating SOUL.md for a profile (تحديث SOUL). Exact procedure for the Lead Architect to update SOUL.md files across all Flutter profiles. Use when the Lead Architect needs to add, modify, or remove sections in any Flutter profile's SOUL.md or config.yaml system_prompt. Eliminates trial-and-error — every step is deterministic.
 version: 1.0.1
 metadata:
   hermes:
